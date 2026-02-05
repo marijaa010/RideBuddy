@@ -1,0 +1,37 @@
+sequenceDiagram
+    participant P as Passenger
+    participant BS as Booking Service
+    participant RS as Ride Service
+    participant US as User Service
+    participant MQ as RabbitMQ
+    participant NS as Notification Service
+    participant D as Driver
+    
+    P->>BS: POST /bookings
+    BS->>US: gRPC: ValidatePassenger
+    US-->>BS: Valid User
+    BS->>RS: gRPC: CheckAvailability
+    RS-->>BS: Available: true, DriverId
+    BS->>BS: Create Booking (Pending)
+    BS->>RS: gRPC: ReserveSeats
+    alt Seats Reserved Successfully
+        RS-->>BS: Success
+        BS->>BS: Confirm Booking
+        BS->>MQ: Publish BookingConfirmedEvent
+        MQ->>NS: BookingConfirmedEvent
+        
+        par Notify Passenger
+            NS->>P: Email: Booking Confirmed
+        and Notify Driver
+            NS->>D: Email: New Booking Request
+        end
+        
+        BS-->>P: 201 Created
+    else Seats Not Available
+        RS-->>BS: Failure
+        BS->>BS: Cancel Booking
+        BS->>MQ: Publish BookingFailedEvent
+        MQ->>NS: BookingFailedEvent
+        NS->>P: Email: Booking Failed
+        BS-->>P: 409 Conflict
+    end

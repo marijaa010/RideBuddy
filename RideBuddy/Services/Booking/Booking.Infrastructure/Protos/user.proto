@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+option csharp_namespace = "Booking.Infrastructure.Protos";
+
+package user;
+
+// Service for communication with User Service
+service UserGrpc {
+  // Validates if user exists and is active
+  rpc ValidateUser (ValidateUserRequest) returns (UserInfoResponse);
+  
+  // Returns user information
+  rpc GetUserInfo (GetUserInfoRequest) returns (UserInfoResponse);
+}
+
+message ValidateUserRequest {
+  string user_id = 1;
+}
+
+message GetUserInfoRequest {
+  string user_id = 1;
+}
+
+message UserInfoResponse {
+  string user_id = 1;
+  string email = 2;
+  string first_name = 3;
+  string last_name = 4;
+  string phone_number = 5;
+  bool is_valid = 6;
+}

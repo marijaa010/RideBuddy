@@ -1,0 +1,48 @@
+classDiagram
+    class Booking {
+        +Guid Id
+        +Guid RideId
+        +Guid PassengerId
+        +int SeatsBooked
+        +decimal TotalPrice
+        +BookingStatus Status
+        +DateTime BookedAt
+        +DateTime? ConfirmedAt
+        +DateTime? CancelledAt
+        +CreateBooking()
+        +ConfirmBooking()
+        +CancelBooking()
+    }
+    
+    class BookingStatus {
+        <<enumeration>>
+        Pending
+        Confirmed
+        Cancelled
+        Completed
+    }
+    
+    class CreateBookingCommand {
+        +Guid RideId
+        +Guid PassengerId
+        +int SeatsBooked
+    }
+    
+    class CreateBookingCommandHandler {
+        -IBookingRepository repository
+        -IRideGrpcClient rideClient
+        -IMessagePublisher publisher
+        +Handle(CreateBookingCommand)
+    }
+    
+    class BookingSaga {
+        -IBookingRepository repository
+        -IRideGrpcClient rideClient
+        +ExecuteAsync()
+        +CompensateAsync()
+    }
+    
+    Booking --> BookingStatus
+    CreateBookingCommandHandler --> CreateBookingCommand
+    CreateBookingCommandHandler --> Booking
+    BookingSaga --> Booking
