@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant D as Driver
+    participant RS as Ride Service
+    participant BS as Booking Service
+    participant MQ as RabbitMQ
+    participant NS as Notification Service
+    participant P as Passengers
+    
+    D->>RS: DELETE /rides/{id}
+    RS->>RS: Update Ride Status: Cancelled
+    RS->>BS: gRPC: GetBookingsForRide(rideId)
+    BS-->>RS: List of Bookings
+    RS->>MQ: Publish RideCancelledEvent
+    MQ->>NS: RideCancelledEvent
+    MQ->>BS: RideCancelledEvent
+    
+    BS->>BS: Cancel All Bookings
+    
+    par Notify All Passengers
+        NS->>P: Email: Ride Cancelled by Driver
+    and Notify Driver
+        NS->>D: Email: Ride Cancellation Confirmed
+    end
+    
+    RS-->>D: 200 OK

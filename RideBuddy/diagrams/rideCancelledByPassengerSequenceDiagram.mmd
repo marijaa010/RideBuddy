@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant P as Passenger
+    participant BS as Booking Service
+    participant RS as Ride Service
+    participant MQ as RabbitMQ
+    participant NS as Notification Service
+    participant D as Driver
+    
+    P->>BS: PUT /bookings/{id}/cancel
+    BS->>BS: Update Booking Status: Cancelled
+    BS->>RS: gRPC: ReleaseSeats(rideId, seatsCount)
+    RS-->>BS: Seats Released
+    BS->>MQ: Publish BookingCancelledEvent
+    MQ->>NS: BookingCancelledEvent
+    
+    par Notify Passenger
+        NS->>P: Email: Cancellation Confirmed
+    and Notify Driver
+        NS->>D: Email: Booking Cancelled - Seats Available
+    end
+    
+    BS-->>P: 200 OK

@@ -1,0 +1,57 @@
+classDiagram
+    class Ride {
+        +Guid Id
+        +Guid DriverId
+        +string Origin
+        +string Destination
+        +DateTime DepartureTime
+        +int AvailableSeats
+        +decimal PricePerSeat
+        +RideStatus Status
+        +DateTime CreatedAt
+        +List~Waypoint~ Waypoints
+        +CreateRide()
+        +UpdateAvailableSeats()
+        +CancelRide()
+    }
+    
+    class Waypoint {
+        +Guid Id
+        +string Location
+        +int Order
+        +DateTime EstimatedTime
+    }
+    
+    class RideStatus {
+        <<enumeration>>
+        Scheduled
+        InProgress
+        Completed
+        Cancelled
+    }
+    
+    class CreateRideCommand {
+        +Guid DriverId
+        +string Origin
+        +string Destination
+        +DateTime DepartureTime
+        +int AvailableSeats
+        +decimal PricePerSeat
+    }
+    
+    class CreateRideCommandHandler {
+        -IRideRepository repository
+        -IUserGrpcClient userClient
+        +Handle(CreateRideCommand)
+    }
+    
+    class SearchRidesQuery {
+        +string Origin
+        +string Destination
+        +DateTime Date
+    }
+    
+    Ride --> RideStatus
+    Ride "1" --> "*" Waypoint
+    CreateRideCommandHandler --> CreateRideCommand
+    CreateRideCommandHandler --> Ride
