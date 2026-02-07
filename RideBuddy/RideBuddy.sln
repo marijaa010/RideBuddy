@@ -6,9 +6,6 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{0BE4B73C-D2AE-437E-A1A2-D3A59CC060A6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Booking", "Booking", "{DBB0281E-FA0B-4ECA-9D6B-75F5E2921F4E}"
-	ProjectSection(SolutionItems) = preProject
-		Dockerfile.txt = Dockerfile.txt
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Booking.Domain", "Services\Booking\Booking.Domain\Booking.Domain.csproj", "{ECA0C420-1356-4FCD-8644-A9D5BC633C2A}"
 EndProject

@@ -26,7 +26,6 @@ RUN dotnet publish "Booking.API.csproj" -c Release -o /app/publish /p:UseAppHost
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 EXPOSE 5003
-EXPOSE 50053
 
 ENV ASPNETCORE_URLS=http://+:5003
 ENV ASPNETCORE_ENVIRONMENT=Production
