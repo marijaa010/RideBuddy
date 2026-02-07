@@ -7,7 +7,7 @@ namespace Booking.Application.Commands.ConfirmBooking;
 /// Command for confirming a booking.
 /// Typically used internally after successful seat reservation.
 /// </summary>
-public record ConfirmBookingCommand : IRequest<r>
+public record ConfirmBookingCommand : IRequest<Result>
 {
     public Guid BookingId { get; init; }
 }
