@@ -42,6 +42,20 @@ public class UserGrpcClient : IUserGrpcClient
             _logger.LogWarning("User {UserId} not found", userId);
             return null;
         }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.Unavailable)
+        {
+            // TODO: Remove mock data after User Service is ready
+            _logger.LogWarning("User Service unavailable, returning mock data for {UserId}", userId);
+            return new UserInfoDto
+            {
+                UserId = userId,
+                Email = "test@example.com",
+                FirstName = "Test",
+                LastName = "User",
+                PhoneNumber = "+1234567890",
+                IsValid = true
+            };
+        }
         catch (RpcException ex)
         {
             _logger.LogError(ex, "gRPC error while validating user {UserId}", userId);

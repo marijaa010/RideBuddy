@@ -26,7 +26,7 @@ public class ConfirmBookingCommandHandler : IRequestHandler<ConfirmBookingComman
         _logger = logger;
     }
 
-    public async Task<r> Handle(ConfirmBookingCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(ConfirmBookingCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Confirming booking {BookingId}", request.BookingId);
 

@@ -1,4 +1,4 @@
-﻿using Booking.Application.Commands.CancelBooking;
+using Booking.Application.Commands.CancelBooking;
 using Booking.Application.Commands.CreateBooking;
 using Booking.Application.DTOs;
 using Booking.Application.Queries.GetBookingById;
@@ -16,7 +16,7 @@ namespace Booking.API.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+// [Authorize] // TODO: Re-enable after User Service is ready
 public class BookingsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -151,7 +151,9 @@ public class BookingsController : ControllerBase
 
         if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
         {
-            throw new UnauthorizedAccessException("Invalid or missing user ID in token.");
+            // TODO: Remove this fallback after User Service is ready
+            // Return test user ID for development
+            return Guid.Parse("11111111-1111-1111-1111-111111111111");
         }
 
         return userId;

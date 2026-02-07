@@ -1,176 +1,130 @@
-﻿using Booking.Application.Commands.CancelBooking;
-using Booking.Application.Commands.CreateBooking;
-using Booking.Application.DTOs;
-using Booking.Application.Queries.GetBookingById;
-using Booking.Application.Queries.GetBookingsByPassenger;
-using Booking.Application.Queries.GetBookingsByRide;
-using Booking.Domain.Enums;
+using Booking.Application.Behaviors;
+using Booking.Application.Interfaces;
+using Booking.Domain.Interfaces;
+using Booking.Infrastructure.Repositories;
+using Booking.Infrastructure.Messaging;
+using Booking.Infrastructure.Outbox;
+using Booking.Infrastructure.Persistence;
+using Booking.Infrastructure.Protos;
+using Booking.Infrastructure.Repositories;
+using Booking.Infrastructure.Services;
+using FluentValidation;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using RabbitMQ.Client;
 
 namespace Booking.API.Extensions;
 
 /// <summary>
-/// API controller for managing ride bookings.
+/// Extension methods for configuring dependency injection.
 /// </summary>
-[ApiController]
-[Route("api/[controller]")]
-[Authorize]
-public class BookingsController : ControllerBase
+public static class ServiceCollectionExtension
 {
-    private readonly IMediator _mediator;
-    private readonly ILogger<BookingsController> _logger;
-
-    public BookingsController(IMediator mediator, ILogger<BookingsController> logger)
+    /// <summary>
+    /// Registers Application layer services: MediatR, validators, pipeline behaviors.
+    /// </summary>
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        _mediator = mediator;
-        _logger = logger;
+        var applicationAssembly = typeof(Booking.Application.Commands.CreateBooking.CreateBookingCommand).Assembly;
+
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(applicationAssembly));
+
+        services.AddValidatorsFromAssembly(applicationAssembly);
+
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+
+        return services;
     }
 
     /// <summary>
-    /// Creates a new booking for a ride.
+    /// Registers Infrastructure layer services: EF Core, gRPC clients, RabbitMQ, repositories.
     /// </summary>
-    /// <param name="request">Booking details</param>
-    /// <returns>Created booking</returns>
-    [HttpPost]
-    [ProducesResponseType(typeof(BookingDto), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> CreateBooking([FromBody] CreateBookingRequest request)
+    public static IServiceCollection AddInfrastructureServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
-        var command = new CreateBookingCommand
+        // EF Core with PostgreSQL
+        services.AddDbContext<BookingDbContext>(options =>
+            options.UseNpgsql(configuration.GetConnectionString("BookingDb")));
+
+        // Repositories
+        services.AddScoped<IBookingRepository, BookingRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        // gRPC clients
+        services.AddGrpcClient<RideGrpc.RideGrpcClient>(options =>
         {
-            RideId = request.RideId,
-            PassengerId = GetUserIdFromToken(),
-            SeatsToBook = request.SeatsToBook
-        };
+            options.Address = new Uri(configuration["GrpcServices:RideService"]!);
+        });
 
-        var result = await _mediator.Send(command);
-
-        if (result.IsFailure)
+        services.AddGrpcClient<UserGrpc.UserGrpcClient>(options =>
         {
-            _logger.LogWarning("Failed to create booking: {Error}", result.Error);
-            return Conflict(new { error = result.Error });
-        }
+            options.Address = new Uri(configuration["GrpcServices:UserService"]!);
+        });
 
-        return CreatedAtAction(
-            nameof(GetBookingById),
-            new { id = result.Value.Id },
-            result.Value);
+        services.AddScoped<IRideGrpcClient, RideGrpcClient>();
+        services.AddScoped<IUserGrpcClient, UserGrpcClient>();
+
+        // RabbitMQ
+        services.AddSingleton<IConnection?>(sp =>
+        {
+            try
+            {
+                var factory = new ConnectionFactory
+                {
+                    HostName = configuration["RabbitMQ:Host"] ?? "localhost",
+                    Port = int.Parse(configuration["RabbitMQ:Port"] ?? "5672"),
+                    UserName = configuration["RabbitMQ:Username"] ?? "guest",
+                    Password = configuration["RabbitMQ:Password"] ?? "guest",
+                    VirtualHost = configuration["RabbitMQ:VirtualHost"] ?? "/"
+                };
+
+                return factory.CreateConnection();
+            }
+            catch (Exception ex)
+            {
+                var logger = sp.GetRequiredService<ILogger<Program>>();
+                logger.LogWarning(ex, "Could not connect to RabbitMQ. Outbox pattern will retry later.");
+                return null;
+            }
+        });
+
+        services.AddScoped<IEventPublisher, RabbitMqEventPublisher>();
+
+        // Outbox background processor
+        services.AddHostedService<OutboxProcessor>();
+
+        return services;
     }
 
     /// <summary>
-    /// Gets a booking by its ID.
+    /// Configures JWT Bearer authentication.
     /// </summary>
-    /// <param name="id">Booking ID</param>
-    /// <returns>Booking details</returns>
-    [HttpGet("{id:guid}")]
-    [ProducesResponseType(typeof(BookingDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetBookingById(Guid id)
+    public static IServiceCollection AddJwtAuthentication(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
-        var query = new GetBookingByIdQuery { BookingId = id };
-        var booking = await _mediator.Send(query);
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.Authority = configuration["Jwt:Authority"];
+                options.RequireHttpsMetadata = false;
 
-        if (booking is null)
-        {
-            return NotFound(new { error = $"Booking with ID '{id}' not found." });
-        }
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = configuration["Jwt:Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = configuration["Jwt:Audience"],
+                    ValidateLifetime = true
+                };
+            });
 
-        return Ok(booking);
+        services.AddAuthorization();
+
+        return services;
     }
-
-    /// <summary>
-    /// Gets all bookings for the current user (passenger).
-    /// </summary>
-    /// <param name="status">Optional status filter</param>
-    /// <returns>List of bookings</returns>
-    [HttpGet("my-bookings")]
-    [ProducesResponseType(typeof(IReadOnlyList<BookingDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetMyBookings([FromQuery] BookingStatus? status = null)
-    {
-        var query = new GetBookingsByPassengerQuery
-        {
-            PassengerId = GetUserIdFromToken(),
-            Status = status
-        };
-
-        var bookings = await _mediator.Send(query);
-        return Ok(bookings);
-    }
-
-    /// <summary>
-    /// Gets all bookings for a specific ride.
-    /// </summary>
-    /// <param name="rideId">Ride ID</param>
-    /// <returns>List of bookings</returns>
-    [HttpGet("by-ride/{rideId:guid}")]
-    [ProducesResponseType(typeof(IReadOnlyList<BookingDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetBookingsByRide(Guid rideId)
-    {
-        var query = new GetBookingsByRideQuery { RideId = rideId };
-        var bookings = await _mediator.Send(query);
-        return Ok(bookings);
-    }
-
-    /// <summary>
-    /// Cancels a booking.
-    /// </summary>
-    /// <param name="id">Booking ID</param>
-    /// <param name="request">Cancellation reason (optional)</param>
-    /// <returns>No content if successful</returns>
-    [HttpPut("{id:guid}/cancel")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> CancelBooking(Guid id, [FromBody] CancelBookingRequest? request = null)
-    {
-        var command = new CancelBookingCommand
-        {
-            BookingId = id,
-            UserId = GetUserIdFromToken(),
-            Reason = request?.Reason ?? string.Empty
-        };
-
-        var result = await _mediator.Send(command);
-
-        if (result.IsFailure)
-        {
-            _logger.LogWarning("Failed to cancel booking {BookingId}: {Error}", id, result.Error);
-            return BadRequest(new { error = result.Error });
-        }
-
-        return NoContent();
-    }
-
-    private Guid GetUserIdFromToken()
-    {
-        // Extract user ID from JWT claims
-        var userIdClaim = User.FindFirst("sub") ?? User.FindFirst("userId");
-
-        if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
-        {
-            throw new UnauthorizedAccessException("Invalid or missing user ID in token.");
-        }
-
-        return userId;
-    }
-}
-
-/// <summary>
-/// Request model for creating a booking.
-/// </summary>
-public record CreateBookingRequest
-{
-    public Guid RideId { get; init; }
-    public int SeatsToBook { get; init; } = 1;
-}
-
-/// <summary>
-/// Request model for cancelling a booking.
-/// </summary>
-public record CancelBookingRequest
-{
-    public string? Reason { get; init; }
 }
