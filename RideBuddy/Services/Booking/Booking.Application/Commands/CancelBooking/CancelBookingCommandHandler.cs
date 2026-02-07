@@ -29,7 +29,7 @@ public class CancelBookingCommandHandler : IRequestHandler<CancelBookingCommand,
         _logger = logger;
     }
 
-    public async Task<r> Handle(CancelBookingCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(CancelBookingCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation(
             "Cancelling booking {BookingId} by user {UserId}", 
