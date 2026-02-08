@@ -9,6 +9,7 @@ namespace Booking.Application.Commands.ConfirmBooking;
 
 /// <summary>
 /// Handler for confirming a booking.
+/// Used by the driver to manually approve a pending booking.
 /// </summary>
 public class ConfirmBookingCommandHandler : IRequestHandler<ConfirmBookingCommand, Result>
 {
@@ -28,13 +29,25 @@ public class ConfirmBookingCommandHandler : IRequestHandler<ConfirmBookingComman
 
     public async Task<Result> Handle(ConfirmBookingCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Confirming booking {BookingId}", request.BookingId);
+        _logger.LogInformation(
+            "User {UserId} confirming booking {BookingId}",
+            request.UserId,
+            request.BookingId);
 
         var booking = await _unitOfWork.Bookings.GetByIdAsync(request.BookingId, cancellationToken);
 
         if (booking is null)
         {
             throw new BookingNotFoundException(request.BookingId);
+        }
+
+        if (booking.DriverId != request.UserId)
+        {
+            _logger.LogWarning(
+                "User {UserId} attempted to confirm booking {BookingId} but is not the driver",
+                request.UserId,
+                request.BookingId);
+            return Result.Failure("Only the driver can confirm a booking.");
         }
 
         try
@@ -46,7 +59,7 @@ public class ConfirmBookingCommandHandler : IRequestHandler<ConfirmBookingComman
             await _eventPublisher.PublishManyAsync(booking.DomainEvents, cancellationToken);
             booking.ClearDomainEvents();
 
-            _logger.LogInformation("Booking {BookingId} successfully confirmed", request.BookingId);
+            _logger.LogInformation("Booking {BookingId} confirmed by driver", request.BookingId);
 
             return Result.Success();
         }

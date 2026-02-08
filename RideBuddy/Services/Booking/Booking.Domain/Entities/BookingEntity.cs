@@ -58,6 +58,11 @@ public class BookingEntity : AggregateRoot
     public DateTime? CompletedAt { get; private set; }
 
     /// <summary>
+    /// Timestamp when the booking was rejected.
+    /// </summary>
+    public DateTime? RejectedAt { get; private set; }
+
+    /// <summary>
     /// Reason for cancellation (if cancelled).
     /// </summary>
     public string? CancellationReason { get; private set; }
@@ -153,8 +158,9 @@ public class BookingEntity : AggregateRoot
     }
 
     /// <summary>
-    /// Marks the booking as rejected (e.g., no available seats).
+    /// Marks the booking as rejected by the driver.
     /// </summary>
+    /// <param name="reason">Reason for rejection</param>
     public void Reject(string reason)
     {
         if (Status != BookingStatus.Pending)
@@ -162,8 +168,17 @@ public class BookingEntity : AggregateRoot
                 $"Only bookings in 'Pending' status can be rejected. Current status: '{Status}'.");
 
         Status = BookingStatus.Rejected;
+        RejectedAt = DateTime.UtcNow;
         CancellationReason = reason;
         IncrementVersion();
+
+        AddDomainEvent(new BookingRejectedEvent(
+            Id,
+            RideId.Value,
+            PassengerId.Value,
+            SeatsBooked.Value,
+            reason,
+            RejectedAt.Value));
     }
 
     /// <summary>

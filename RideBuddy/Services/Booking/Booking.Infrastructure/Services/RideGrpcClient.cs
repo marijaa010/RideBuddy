@@ -36,7 +36,9 @@ public class RideGrpcClient : IRideGrpcClient
                 DepartureTime = DateTime.Parse(response.DepartureTime),
                 AvailableSeats = response.AvailableSeats,
                 PricePerSeat = (decimal)response.PricePerSeat,
-                IsAvailable = response.IsAvailable
+                Currency = response.Currency,
+                IsAvailable = response.IsAvailable,
+                AutoConfirmBookings = response.AutoConfirmBookings
             };
         }
         catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
@@ -52,8 +54,8 @@ public class RideGrpcClient : IRideGrpcClient
     }
 
     public async Task<bool> CheckAvailabilityAsync(
-        Guid rideId, 
-        int seatsRequested, 
+        Guid rideId,
+        int seatsRequested,
         CancellationToken cancellationToken = default)
     {
         try
@@ -75,8 +77,8 @@ public class RideGrpcClient : IRideGrpcClient
     }
 
     public async Task<bool> ReserveSeatsAsync(
-        Guid rideId, 
-        int seatsCount, 
+        Guid rideId,
+        int seatsCount,
         CancellationToken cancellationToken = default)
     {
         try
@@ -88,11 +90,11 @@ public class RideGrpcClient : IRideGrpcClient
             };
 
             var response = await _client.ReserveSeatsAsync(request, cancellationToken: cancellationToken);
-            
+
             if (!response.Success)
             {
                 _logger.LogWarning(
-                    "Failed to reserve {SeatsCount} seats for ride {RideId}: {Message}", 
+                    "Failed to reserve {SeatsCount} seats for ride {RideId}: {Message}",
                     seatsCount, rideId, response.Message);
             }
 
@@ -106,8 +108,8 @@ public class RideGrpcClient : IRideGrpcClient
     }
 
     public async Task<bool> ReleaseSeatsAsync(
-        Guid rideId, 
-        int seatsCount, 
+        Guid rideId,
+        int seatsCount,
         CancellationToken cancellationToken = default)
     {
         try
@@ -119,11 +121,11 @@ public class RideGrpcClient : IRideGrpcClient
             };
 
             var response = await _client.ReleaseSeatsAsync(request, cancellationToken: cancellationToken);
-            
+
             if (!response.Success)
             {
                 _logger.LogWarning(
-                    "Failed to release {SeatsCount} seats for ride {RideId}: {Message}", 
+                    "Failed to release {SeatsCount} seats for ride {RideId}: {Message}",
                     seatsCount, rideId, response.Message);
             }
 
