@@ -7,6 +7,15 @@ using User.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure Kestrel: REST on 5001 (HTTP/1.1), gRPC on 50051 (HTTP/2)
+builder.WebHost.ConfigureKestrel(options =>
+{
+    // REST API endpoint
+    options.ListenLocalhost(5001, o => o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1);
+    // gRPC endpoint (requires HTTP/2)
+    options.ListenLocalhost(50051, o => o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2);
+});
+
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)

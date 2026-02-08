@@ -1,4 +1,4 @@
-﻿using Booking.Application.Behaviors;
+using Booking.Application.Behaviors;
 using Booking.Application.Interfaces;
 using Booking.Domain.Interfaces;
 using Booking.Infrastructure.Messaging;
@@ -107,12 +107,15 @@ public static class ServiceCollectionExtension
     }
 
     /// <summary>
-    /// Configures JWT Bearer authentication.
+    /// Configures JWT Bearer authentication using the same symmetric key as User Service.
     /// </summary>
     public static IServiceCollection AddJwtAuthentication(
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        var jwtSettings = configuration.GetSection("JwtSettings");
+        var secretKey = jwtSettings.GetSection("secretKey").Value;
+
         services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -120,20 +123,17 @@ public static class ServiceCollectionExtension
         })
         .AddJwtBearer(options =>
         {
-            options.Authority = configuration["Jwt:Authority"];
-            options.Audience = configuration["Jwt:Audience"];
-
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
-                ValidIssuer = configuration["Jwt:Issuer"],
                 ValidateAudience = true,
-                ValidAudience = configuration["Jwt:Audience"],
                 ValidateLifetime = true,
-                ClockSkew = TimeSpan.FromMinutes(1)
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtSettings.GetSection("validIssuer").Value,
+                ValidAudience = jwtSettings.GetSection("validAudience").Value,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!))
             };
 
-            // Allow HTTP in development (gRPC + identity server on localhost)
             if (string.Equals(
                     Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
                     "Development",
