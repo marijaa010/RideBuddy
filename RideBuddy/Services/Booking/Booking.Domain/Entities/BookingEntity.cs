@@ -1,4 +1,4 @@
-using Booking.Domain.Common;
+using SharedKernel;
 using Booking.Domain.Enums;
 using Booking.Domain.Events;
 using Booking.Domain.Exceptions;
