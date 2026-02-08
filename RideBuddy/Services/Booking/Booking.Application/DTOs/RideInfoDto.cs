@@ -12,5 +12,6 @@ public record RideInfoDto
     public DateTime DepartureTime { get; init; }
     public int AvailableSeats { get; init; }
     public decimal PricePerSeat { get; init; }
+    public string Currency { get; init; } = "RSD";
     public bool IsAvailable { get; init; }
 }

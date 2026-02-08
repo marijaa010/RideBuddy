@@ -1,48 +1,237 @@
 classDiagram
-    class Booking {
-        +Guid Id
-        +Guid RideId
-        +Guid PassengerId
-        +int SeatsBooked
-        +decimal TotalPrice
+    %% ─── Domain Layer ───
+    class BookingEntity {
+        <<AggregateRoot>>
+        +RideId RideId
+        +PassengerId PassengerId
+        +Guid DriverId
+        +SeatsBooked SeatsBooked
+        +Money TotalPrice
         +BookingStatus Status
         +DateTime BookedAt
         +DateTime? ConfirmedAt
         +DateTime? CancelledAt
-        +CreateBooking()
-        +ConfirmBooking()
-        +CancelBooking()
+        +DateTime? CompletedAt
+        +string? CancellationReason
+        +Create()$ BookingEntity
+        +Confirm()
+        +Cancel(reason)
+        +Complete()
+        +Reject(reason)
+        +CanBeCancelled() bool
     }
-    
+
     class BookingStatus {
         <<enumeration>>
         Pending
         Confirmed
         Cancelled
         Completed
+        Rejected
     }
-    
+
+    class RideId {
+        <<ValueObject>>
+        +Guid Value
+        +Create(value)$ RideId
+    }
+
+    class PassengerId {
+        <<ValueObject>>
+        +Guid Value
+        +Create(value)$ PassengerId
+    }
+
+    class SeatsBooked {
+        <<ValueObject>>
+        +int Value
+        +Create(value)$ SeatsBooked
+    }
+
+    class Money {
+        <<ValueObject>>
+        +decimal Amount
+        +string Currency
+        +Create(amount, currency)$ Money
+    }
+
+    class IBookingRepository {
+        <<interface>>
+        +GetById(id) Task~BookingEntity?~
+        +GetByPassengerId(passengerId) Task~IReadOnlyList~
+        +GetByRideId(rideId) Task~IReadOnlyList~
+        +GetByPassengerAndStatus(passengerId, status) Task~IReadOnlyList~
+        +ExistsActiveBooking(passengerId, rideId) Task~bool~
+        +Add(booking) Task
+        +Update(booking) Task
+        +GetTotalBookedSeatsForRide(rideId) Task~int~
+    }
+
+    class IUnitOfWork {
+        <<interface>>
+        +Bookings IBookingRepository
+        +SaveChanges() Task~int~
+        +BeginTransaction() Task
+        +CommitTransaction() Task
+        +RollbackTransaction() Task
+    }
+
+    %% ─── Application Layer ───
     class CreateBookingCommand {
+        <<Command>>
+        +Guid RideId
+        +Guid PassengerId
+        +int SeatsToBook
+    }
+
+    class CreateBookingCommandHandler {
+        -IUnitOfWork _unitOfWork
+        -IRideGrpcClient _rideClient
+        -IUserGrpcClient _userClient
+        -IEventPublisher _eventPublisher
+        +Handle(command) Task~Result~BookingDto~~
+    }
+
+    class ConfirmBookingCommand {
+        <<Command>>
+        +Guid BookingId
+    }
+
+    class ConfirmBookingCommandHandler {
+        -IUnitOfWork _unitOfWork
+        -IEventPublisher _eventPublisher
+        +Handle(command) Task~Result~
+    }
+
+    class CancelBookingCommand {
+        <<Command>>
+        +Guid BookingId
+        +Guid UserId
+        +string? Reason
+    }
+
+    class CancelBookingCommandHandler {
+        -IUnitOfWork _unitOfWork
+        -IRideGrpcClient _rideClient
+        -IEventPublisher _eventPublisher
+        +Handle(command) Task~Result~
+    }
+
+    class GetBookingByIdQuery {
+        <<Query>>
+        +Guid BookingId
+    }
+
+    class GetBookingsByPassengerQuery {
+        <<Query>>
+        +Guid PassengerId
+        +BookingStatus? Status
+    }
+
+    class GetBookingsByRideQuery {
+        <<Query>>
+        +Guid RideId
+    }
+
+    class BookingDto {
+        <<DTO>>
+        +Guid Id
         +Guid RideId
         +Guid PassengerId
         +int SeatsBooked
+        +decimal TotalPrice
+        +BookingStatus Status
     }
-    
-    class CreateBookingCommandHandler {
-        -IBookingRepository repository
-        -IRideGrpcClient rideClient
-        -IMessagePublisher publisher
-        +Handle(CreateBookingCommand)
+
+    class IEventPublisher {
+        <<interface>>
+        +Publish~T~(domainEvent) Task
+        +PublishMany(domainEvents) Task
     }
-    
-    class BookingSaga {
-        -IBookingRepository repository
-        -IRideGrpcClient rideClient
-        +ExecuteAsync()
-        +CompensateAsync()
+
+    class IUserGrpcClient {
+        <<interface>>
+        +ValidateUser(userId) Task~UserInfoDto?~
+        +GetUserInfo(userId) Task~UserInfoDto?~
     }
-    
-    Booking --> BookingStatus
-    CreateBookingCommandHandler --> CreateBookingCommand
-    CreateBookingCommandHandler --> Booking
-    BookingSaga --> Booking
+
+    class IRideGrpcClient {
+        <<interface>>
+        +GetRideInfo(rideId) Task~RideInfoDto?~
+        +CheckAvailability(rideId, seats) Task~bool~
+        +ReserveSeats(rideId, seats) Task~bool~
+        +ReleaseSeats(rideId, seats) Task~bool~
+    }
+
+    %% ─── Infrastructure Layer ───
+    class BookingRepository {
+        -BookingDbContext _context
+    }
+
+    class UnitOfWork {
+        -BookingDbContext _context
+        -IDbContextTransaction? _transaction
+    }
+
+    class RabbitMqEventPublisher {
+        -BookingDbContext _dbContext
+        -IConnection? _connection
+    }
+
+    class UserGrpcClient {
+        -UserGrpc.UserGrpcClient _client
+    }
+
+    class RideGrpcClient {
+        -RideGrpc.RideGrpcClient _client
+    }
+
+    class OutboxProcessor {
+        <<BackgroundService>>
+    }
+
+    %% ─── API Layer ───
+    class BookingsController {
+        <<ApiController>>
+        -IMediator _mediator
+        +CreateBooking() Task~IActionResult~
+        +GetBooking(id) Task~IActionResult~
+        +GetByPassenger(passengerId) Task~IActionResult~
+        +GetByRide(rideId) Task~IActionResult~
+        +ConfirmBooking(id) Task~IActionResult~
+        +CancelBooking(id) Task~IActionResult~
+    }
+
+    %% ─── Relationships ───
+    BookingEntity --> BookingStatus
+    BookingEntity --> RideId
+    BookingEntity --> PassengerId
+    BookingEntity --> SeatsBooked
+    BookingEntity --> Money
+
+    BookingsController --> CreateBookingCommand
+    BookingsController --> ConfirmBookingCommand
+    BookingsController --> CancelBookingCommand
+    BookingsController --> GetBookingByIdQuery
+    BookingsController --> GetBookingsByPassengerQuery
+    BookingsController --> GetBookingsByRideQuery
+
+    CreateBookingCommandHandler --> IUnitOfWork
+    CreateBookingCommandHandler --> IRideGrpcClient
+    CreateBookingCommandHandler --> IUserGrpcClient
+    CreateBookingCommandHandler --> IEventPublisher
+    CreateBookingCommandHandler --> BookingEntity
+
+    ConfirmBookingCommandHandler --> IUnitOfWork
+    ConfirmBookingCommandHandler --> IEventPublisher
+
+    CancelBookingCommandHandler --> IUnitOfWork
+    CancelBookingCommandHandler --> IRideGrpcClient
+    CancelBookingCommandHandler --> IEventPublisher
+
+    BookingRepository ..|> IBookingRepository
+    UnitOfWork ..|> IUnitOfWork
+    RabbitMqEventPublisher ..|> IEventPublisher
+    UserGrpcClient ..|> IUserGrpcClient
+    RideGrpcClient ..|> IRideGrpcClient
+    OutboxProcessor --> RabbitMqEventPublisher

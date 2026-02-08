@@ -8,7 +8,6 @@ namespace User.API.Controllers;
 
 /// <summary>
 /// Authentication controller for registration and login.
-/// Inspired by the course's AuthenticationController but dispatches through MediatR.
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]

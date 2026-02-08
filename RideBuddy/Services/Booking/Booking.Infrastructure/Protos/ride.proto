@@ -32,6 +32,7 @@ message RideInfoResponse {
   int32 available_seats = 6;
   double price_per_seat = 7;
   bool is_available = 8;
+  string currency = 9;
 }
 
 message CheckAvailabilityRequest {

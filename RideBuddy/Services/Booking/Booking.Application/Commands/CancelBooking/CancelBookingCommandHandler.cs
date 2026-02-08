@@ -36,7 +36,7 @@ public class CancelBookingCommandHandler : IRequestHandler<CancelBookingCommand,
             request.BookingId, 
             request.UserId);
 
-        var booking = await _unitOfWork.Bookings.GetByIdAsync(request.BookingId, cancellationToken);
+        var booking = await _unitOfWork.Bookings.GetById(request.BookingId, cancellationToken);
 
         if (booking is null)
         {
@@ -63,17 +63,17 @@ public class CancelBookingCommandHandler : IRequestHandler<CancelBookingCommand,
             ? "Cancelled by user" 
             : request.Reason;
 
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        await _unitOfWork.BeginTransaction(cancellationToken);
 
         try
         {
             // Cancel the booking
             booking.Cancel(reason);
-            await _unitOfWork.Bookings.UpdateAsync(booking, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.Bookings.Update(booking, cancellationToken);
+            await _unitOfWork.SaveChanges(cancellationToken);
 
             // Release seats via gRPC
-            var seatsReleased = await _rideClient.ReleaseSeatsAsync(
+            var seatsReleased = await _rideClient.ReleaseSeats(
                 booking.RideId.Value, 
                 booking.SeatsBooked.Value, 
                 cancellationToken);
@@ -86,10 +86,10 @@ public class CancelBookingCommandHandler : IRequestHandler<CancelBookingCommand,
                 // Don't rollback - it's more important that the booking is cancelled
             }
 
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+            await _unitOfWork.CommitTransaction(cancellationToken);
 
             // Publish domain events
-            await _eventPublisher.PublishManyAsync(booking.DomainEvents, cancellationToken);
+            await _eventPublisher.PublishMany(booking.DomainEvents, cancellationToken);
             booking.ClearDomainEvents();
 
             _logger.LogInformation("Booking {BookingId} successfully cancelled", request.BookingId);
@@ -99,7 +99,7 @@ public class CancelBookingCommandHandler : IRequestHandler<CancelBookingCommand,
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error cancelling booking {BookingId}", request.BookingId);
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            await _unitOfWork.RollbackTransaction(cancellationToken);
             return Result.Failure("An error occurred while cancelling the booking.");
         }
     }

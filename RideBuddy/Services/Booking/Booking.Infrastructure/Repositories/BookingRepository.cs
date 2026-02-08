@@ -18,13 +18,13 @@ public class BookingRepository : IBookingRepository
         _context = context;
     }
 
-    public async Task<BookingEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<BookingEntity?> GetById(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Bookings
             .FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<BookingEntity>> GetByPassengerIdAsync(
+    public async Task<IReadOnlyList<BookingEntity>> GetByPassengerId(
         Guid passengerId, 
         CancellationToken cancellationToken = default)
     {
@@ -34,7 +34,7 @@ public class BookingRepository : IBookingRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<BookingEntity>> GetByRideIdAsync(
+    public async Task<IReadOnlyList<BookingEntity>> GetByRideId(
         Guid rideId, 
         CancellationToken cancellationToken = default)
     {
@@ -44,7 +44,7 @@ public class BookingRepository : IBookingRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<BookingEntity>> GetByPassengerAndStatusAsync(
+    public async Task<IReadOnlyList<BookingEntity>> GetByPassengerAndStatus(
         Guid passengerId, 
         BookingStatus status, 
         CancellationToken cancellationToken = default)
@@ -55,7 +55,7 @@ public class BookingRepository : IBookingRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<bool> ExistsActiveBookingAsync(
+    public async Task<bool> ExistsActiveBooking(
         Guid passengerId, 
         Guid rideId, 
         CancellationToken cancellationToken = default)
@@ -68,18 +68,18 @@ public class BookingRepository : IBookingRepository
                 cancellationToken);
     }
 
-    public async Task AddAsync(BookingEntity booking, CancellationToken cancellationToken = default)
+    public async Task Add(BookingEntity booking, CancellationToken cancellationToken = default)
     {
         await _context.Bookings.AddAsync(booking, cancellationToken);
     }
 
-    public Task UpdateAsync(BookingEntity booking, CancellationToken cancellationToken = default)
+    public Task Update(BookingEntity booking, CancellationToken cancellationToken = default)
     {
         _context.Bookings.Update(booking);
         return Task.CompletedTask;
     }
 
-    public async Task<int> GetTotalBookedSeatsForRideAsync(
+    public async Task<int> GetTotalBookedSeatsForRide(
         Guid rideId, 
         CancellationToken cancellationToken = default)
     {

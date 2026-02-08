@@ -48,7 +48,6 @@ public class UserRepository : IUserRepository
     {
         // User is already created via Identity's UserManager in AuthenticationService.
         // Domain entity data is stored on the same ApplicationUser record.
-        // This is a no-op since Identity already persisted the user.
         return Task.CompletedTask;
     }
 

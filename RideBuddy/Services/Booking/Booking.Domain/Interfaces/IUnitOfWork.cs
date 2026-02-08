@@ -14,20 +14,20 @@ public interface IUnitOfWork : IDisposable
     /// <summary>
     /// Saves all changes to the database in a single transaction.
     /// </summary>
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+    Task<int> SaveChanges(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Begins a new transaction.
     /// </summary>
-    Task BeginTransactionAsync(CancellationToken cancellationToken = default);
+    Task BeginTransaction(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Commits the transaction.
     /// </summary>
-    Task CommitTransactionAsync(CancellationToken cancellationToken = default);
+    Task CommitTransaction(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Rolls back the transaction.
     /// </summary>
-    Task RollbackTransactionAsync(CancellationToken cancellationToken = default);
+    Task RollbackTransaction(CancellationToken cancellationToken = default);
 }
