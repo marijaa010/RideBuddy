@@ -78,8 +78,8 @@ public class BookingEntity : AggregateRoot
         Guid passengerId,
         int seatsBooked,
         decimal pricePerSeat,
-        Guid driverId,
-        string currency = "RSD")
+        string currency,
+        Guid driverId)
     {
         var booking = new BookingEntity
         {

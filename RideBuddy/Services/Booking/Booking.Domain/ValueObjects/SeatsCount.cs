@@ -20,9 +20,6 @@ public class SeatsCount : ValueObject
         if (value <= 0)
             throw new BookingDomainException("Number of seats must be greater than 0.");
 
-        if (value > 8) // Maximum passengers in a vehicle
-            throw new BookingDomainException("Cannot book more than 8 seats.");
-
         return new SeatsCount(value);
     }
 
