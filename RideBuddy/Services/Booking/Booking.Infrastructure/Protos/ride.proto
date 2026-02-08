@@ -31,8 +31,9 @@ message RideInfoResponse {
   string departure_time = 5;
   int32 available_seats = 6;
   double price_per_seat = 7;
-  bool is_available = 8;
-  string currency = 9;
+  string currency = 8;
+  bool is_available = 9;
+  bool auto_confirm_bookings = 10;
 }
 
 message CheckAvailabilityRequest {

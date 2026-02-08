@@ -1,5 +1,7 @@
 ﻿using Booking.Application.Commands.CancelBooking;
+using Booking.Application.Commands.ConfirmBooking;
 using Booking.Application.Commands.CreateBooking;
+using Booking.Application.Commands.RejectBooking;
 using Booking.Application.DTOs;
 using Booking.Application.Queries.GetBookingById;
 using Booking.Application.Queries.GetBookingsByPassenger;
@@ -30,6 +32,8 @@ public class BookingsController : ControllerBase
 
     /// <summary>
     /// Creates a new booking for a ride.
+    /// If the driver has auto-confirm enabled, the booking is confirmed immediately.
+    /// Otherwise, it remains in Pending status until the driver approves or rejects it.
     /// </summary>
     /// <param name="request">Booking details</param>
     /// <returns>Created booking</returns>
@@ -115,6 +119,71 @@ public class BookingsController : ControllerBase
     }
 
     /// <summary>
+    /// Driver confirms a pending booking.
+    /// </summary>
+    /// <param name="id">Booking ID</param>
+    /// <returns>No content if successful</returns>
+    [HttpPut("{id:guid}/confirm")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ConfirmBooking(Guid id)
+    {
+        var command = new ConfirmBookingCommand
+        {
+            BookingId = id,
+            UserId = GetUserIdFromToken()
+        };
+
+        var result = await _mediator.Send(command);
+
+        if (result.IsFailure)
+        {
+            _logger.LogWarning("Failed to confirm booking {BookingId}: {Error}", id, result.Error);
+            return BadRequest(new
+            {
+                error = result.Error,
+                message = $"Unable to confirm booking '{id}'. Please verify you are the ride owner and the booking is in a pending state."
+            });
+        }
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Driver rejects a pending booking.
+    /// </summary>
+    /// <param name="id">Booking ID</param>
+    /// <param name="request">Rejection reason (optional)</param>
+    /// <returns>No content if successful</returns>
+    [HttpPut("{id:guid}/reject")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RejectBooking(Guid id, [FromBody] RejectBookingRequest? request = null)
+    {
+        var command = new RejectBookingCommand
+        {
+            BookingId = id,
+            DriverId = GetUserIdFromToken(),
+            Reason = request?.Reason ?? string.Empty
+        };
+
+        var result = await _mediator.Send(command);
+
+        if (result.IsFailure)
+        {
+            _logger.LogWarning("Failed to reject booking {BookingId}: {Error}", id, result.Error);
+            return BadRequest(new 
+            { error = result.Error,
+                message = $"Unable to reject booking '{id}'. Please verify you are the ride owner and the booking is in a pending state."
+            });
+        }
+
+        return NoContent();
+    }
+
+    /// <summary>
     /// Cancels a booking.
     /// </summary>
     /// <param name="id">Booking ID</param>
@@ -146,7 +215,6 @@ public class BookingsController : ControllerBase
 
     private Guid GetUserIdFromToken()
     {
-        // Extract user ID from JWT claims
         var userIdClaim = User.FindFirst("sub") ?? User.FindFirst("userId");
 
         if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out var userId))
@@ -171,6 +239,14 @@ public record CreateBookingRequest
 /// Request model for cancelling a booking.
 /// </summary>
 public record CancelBookingRequest
+{
+    public string? Reason { get; init; }
+}
+
+/// <summary>
+/// Request model for rejecting a booking.
+/// </summary>
+public record RejectBookingRequest
 {
     public string? Reason { get; init; }
 }

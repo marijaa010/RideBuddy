@@ -36,8 +36,9 @@ public class RideGrpcClient : IRideGrpcClient
                 DepartureTime = DateTime.Parse(response.DepartureTime),
                 AvailableSeats = response.AvailableSeats,
                 PricePerSeat = (decimal)response.PricePerSeat,
-                Currency = string.IsNullOrEmpty(response.Currency) ? "RSD" : response.Currency,
-                IsAvailable = response.IsAvailable
+                Currency = response.Currency,
+                IsAvailable = response.IsAvailable,
+                AutoConfirmBookings = response.AutoConfirmBookings
             };
         }
         catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
@@ -51,7 +52,6 @@ public class RideGrpcClient : IRideGrpcClient
             throw;
         }
     }
-
     public async Task<bool> CheckAvailability(
         Guid rideId, 
         int seatsRequested, 
@@ -74,7 +74,6 @@ public class RideGrpcClient : IRideGrpcClient
             return false;
         }
     }
-
     public async Task<bool> ReserveSeats(
         Guid rideId, 
         int seatsCount, 
@@ -89,11 +88,11 @@ public class RideGrpcClient : IRideGrpcClient
             };
 
             var response = await _client.ReserveSeatsAsync(request, cancellationToken: cancellationToken);
-            
+
             if (!response.Success)
             {
                 _logger.LogWarning(
-                    "Failed to reserve {SeatsCount} seats for ride {RideId}: {Message}", 
+                    "Failed to reserve {SeatsCount} seats for ride {RideId}: {Message}",
                     seatsCount, rideId, response.Message);
             }
 
@@ -105,7 +104,6 @@ public class RideGrpcClient : IRideGrpcClient
             return false;
         }
     }
-
     public async Task<bool> ReleaseSeats(
         Guid rideId, 
         int seatsCount, 
@@ -120,11 +118,11 @@ public class RideGrpcClient : IRideGrpcClient
             };
 
             var response = await _client.ReleaseSeatsAsync(request, cancellationToken: cancellationToken);
-            
+
             if (!response.Success)
             {
                 _logger.LogWarning(
-                    "Failed to release {SeatsCount} seats for ride {RideId}: {Message}", 
+                    "Failed to release {SeatsCount} seats for ride {RideId}: {Message}",
                     seatsCount, rideId, response.Message);
             }
 

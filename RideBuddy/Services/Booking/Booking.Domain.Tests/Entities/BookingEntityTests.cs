@@ -37,6 +37,7 @@ public class BookingEntityTests
         booking.ConfirmedAt.Should().BeNull();
         booking.CancelledAt.Should().BeNull();
         booking.CompletedAt.Should().BeNull();
+        booking.RejectedAt.Should().BeNull();
         booking.CancellationReason.Should().BeNull();
     }
 
@@ -213,6 +214,8 @@ public class BookingEntityTests
 
         booking.Status.Should().Be(BookingStatus.Rejected);
         booking.CancellationReason.Should().Be(reason);
+        booking.RejectedAt.Should().NotBeNull();
+        booking.RejectedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
     }
 
     [Fact]
@@ -226,14 +229,23 @@ public class BookingEntityTests
     }
 
     [Fact]
-    public void Reject_DoesNotRaiseDomainEvent()
+    public void Reject_RaisesBookingRejectedEvent()
     {
         var booking = CreateBooking();
         booking.ClearDomainEvents();
+        var reason = "No room for luggage";
 
-        booking.Reject("No seats");
+        booking.Reject(reason);
 
-        booking.DomainEvents.Should().BeEmpty();
+        booking.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<BookingRejectedEvent>();
+
+        var @event = (BookingRejectedEvent)booking.DomainEvents.First();
+        @event.BookingId.Should().Be(booking.Id);
+        @event.RideId.Should().Be(_rideId);
+        @event.PassengerId.Should().Be(_passengerId);
+        @event.SeatsReleased.Should().Be(Seats);
+        @event.RejectionReason.Should().Be(reason);
     }
 
     [Theory]
@@ -395,6 +407,18 @@ public class BookingEntityTests
 
         booking.Status.Should().Be(BookingStatus.Cancelled);
         booking.Version.Should().Be(2);
+    }
+
+    [Fact]
+    public void FullLifecycle_Pending_Rejected()
+    {
+        var booking = CreateBooking();
+
+        booking.Reject("Driver declined");
+
+        booking.Status.Should().Be(BookingStatus.Rejected);
+        booking.Version.Should().Be(1);
+        booking.RejectedAt.Should().NotBeNull();
     }
 
     [Fact]

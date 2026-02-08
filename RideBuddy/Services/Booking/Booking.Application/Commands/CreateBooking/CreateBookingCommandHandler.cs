@@ -11,6 +11,7 @@ namespace Booking.Application.Commands.CreateBooking;
 /// <summary>
 /// Handler for creating a booking.
 /// Implements the Saga pattern for coordination between services.
+/// Supports both auto-confirm and manual driver approval flows.
 /// </summary>
 public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand, Result<BookingDto>>
 {
@@ -35,12 +36,12 @@ public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand,
     }
 
     public async Task<Result<BookingDto>> Handle(
-        CreateBookingCommand request, 
+        CreateBookingCommand request,
         CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "Creating booking for passenger {PassengerId} on ride {RideId}", 
-            request.PassengerId, 
+            "Creating booking for passenger {PassengerId} on ride {RideId}",
+            request.PassengerId,
             request.RideId);
 
         // Saga Step 1: Validate user via gRPC
@@ -107,9 +108,9 @@ public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand,
             {
                 // Compensation - rollback booking
                 _logger.LogWarning(
-                    "Could not reserve seats. Starting compensation for booking {BookingId}", 
+                    "Could not reserve seats. Starting compensation for booking {BookingId}",
                     booking.Id);
-                
+
                 booking.Reject("Could not reserve seats on the ride.");
                 await _unitOfWork.Bookings.Update(booking, cancellationToken);
                 await _unitOfWork.SaveChanges(cancellationToken);
@@ -118,26 +119,39 @@ public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand,
                 return Result.Failure<BookingDto>("Could not reserve seats. Please try again.");
             }
 
-            // Saga Step 6: Confirm booking
-            booking.Confirm();
+            // Saga Step 6: Auto-confirm or wait for driver approval
+            if (rideInfo.AutoConfirmBookings)
+            {
+                booking.Confirm();
+                _logger.LogInformation(
+                    "Booking {BookingId} auto-confirmed", booking.Id);
+            }
+            else
+            {
+                _logger.LogInformation(
+                    "Booking {BookingId} awaiting driver approval", booking.Id);
+            }
+
             await _unitOfWork.Bookings.Update(booking, cancellationToken);
             await _unitOfWork.SaveChanges(cancellationToken);
             await _unitOfWork.CommitTransaction(cancellationToken);
 
             // Saga Step 7: Publish domain events
+            // Auto-confirm: BookingCreatedEvent + BookingConfirmedEvent
+            // Manual: BookingCreatedEvent only (driver gets notified of pending booking)
             await _eventPublisher.PublishMany(booking.DomainEvents, cancellationToken);
             booking.ClearDomainEvents();
 
             _logger.LogInformation(
-                "Booking {BookingId} successfully created and confirmed", 
-                booking.Id);
+                "Booking {BookingId} successfully created (status: {Status})",
+                booking.Id,
+                booking.Status);
 
             return Result.Success(MapToDto(booking));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating booking. Starting rollback.");
-            
             await _unitOfWork.RollbackTransaction(cancellationToken);
 
             // Compensation - release seats if they were reserved
