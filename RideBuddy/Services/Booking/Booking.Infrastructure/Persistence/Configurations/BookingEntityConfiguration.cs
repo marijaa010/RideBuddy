@@ -67,6 +67,7 @@ public class BookingEntityConfiguration : IEntityTypeConfiguration<BookingEntity
         builder.Property(b => b.ConfirmedAt);
         builder.Property(b => b.CancelledAt);
         builder.Property(b => b.CompletedAt);
+        builder.Property(b => b.RejectedAt);
 
         builder.Property(b => b.CancellationReason)
             .HasMaxLength(500);
