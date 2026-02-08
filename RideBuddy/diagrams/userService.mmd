@@ -1,43 +1,89 @@
 classDiagram
-    class User {
+    class UserEntity {
         +Guid Id
-        +string Email
-        +string PasswordHash
+        +Email Email
         +string FirstName
         +string LastName
-        +string PhoneNumber
-        +DateTime CreatedAt
+        +PhoneNumber PhoneNumber
         +UserRole Role
         +bool IsEmailVerified
+        +DateTime CreatedAt
+        +DateTime? UpdatedAt
         +Register()
         +UpdateProfile()
         +VerifyEmail()
+        +ChangeRole()
     }
-    
+
     class UserRole {
         <<enumeration>>
         Driver
         Passenger
         Both
     }
-    
+
+    class ApplicationUser {
+        +string FirstName
+        +string LastName
+        +string Role
+        +bool IsEmailVerified
+        +DateTime CreatedAt
+    }
+
     class IUserRepository {
         <<interface>>
-        +Task~User~ GetByIdAsync(Guid id)
-        +Task~User~ GetByEmailAsync(string email)
-        +Task~User~ CreateAsync(User user)
-        +Task UpdateAsync(User user)
+        +Task~UserEntity~ GetById(Guid id)
+        +Task~UserEntity~ GetByEmail(string email)
+        +Task Add(UserEntity user)
+        +Task Update(UserEntity user)
+        +Task~bool~ ExistsByEmail(string email)
     }
-    
-    class UserService {
-        -IUserRepository repository
-        -IPasswordHasher hasher
-        -IJwtTokenGenerator tokenGenerator
-        +Task~AuthResponse~ RegisterAsync(RegisterRequest)
-        +Task~AuthResponse~ LoginAsync(LoginRequest)
-        +Task~UserDto~ GetProfileAsync(Guid userId)
+
+    class RegisterUserCommand {
+        +string Email
+        +string Password
+        +string FirstName
+        +string LastName
+        +string PhoneNumber
+        +string Role
     }
-    
-    User --> UserRole
-    UserService --> IUserRepository
-    UserService --> User
+
+    class RegisterUserCommandHandler {
+        -IAuthenticationService authService
+        -IJwtTokenGenerator jwtGenerator
+        -IUnitOfWork unitOfWork
+        -IEventPublisher eventPublisher
+        +Handle(RegisterUserCommand)
+    }
+
+    class LoginUserQuery {
+        +string Email
+        +string Password
+    }
+
+    class LoginUserQueryHandler {
+        -IAuthenticationService authService
+        -IJwtTokenGenerator jwtGenerator
+        +Handle(LoginUserQuery)
+    }
+
+    class IAuthenticationService {
+        <<interface>>
+        +Task~UserEntity~ ValidateUser(string email, string password)
+        +Task~Guid~ CreateUser(string email, string password, ...)
+        +Task~IList~ GetUserRoles(Guid userId)
+    }
+
+    class IJwtTokenGenerator {
+        <<interface>>
+        +string GenerateToken(UserEntity user, IList roles)
+    }
+
+    UserEntity --> UserRole
+    ApplicationUser --|> IdentityUser : extends
+    RegisterUserCommandHandler --> RegisterUserCommand
+    RegisterUserCommandHandler --> UserEntity
+    RegisterUserCommandHandler --> IAuthenticationService
+    LoginUserQueryHandler --> LoginUserQuery
+    LoginUserQueryHandler --> IAuthenticationService
+    LoginUserQueryHandler --> IJwtTokenGenerator

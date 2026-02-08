@@ -26,14 +26,14 @@ public class GetBookingsByPassengerQueryHandler
 
         if (request.Status.HasValue)
         {
-            bookings = await _repository.GetByPassengerAndStatusAsync(
+            bookings = await _repository.GetByPassengerAndStatus(
                 request.PassengerId, 
                 request.Status.Value, 
                 cancellationToken);
         }
         else
         {
-            bookings = await _repository.GetByPassengerIdAsync(
+            bookings = await _repository.GetByPassengerId(
                 request.PassengerId, 
                 cancellationToken);
         }

@@ -10,10 +10,10 @@ public interface IUserGrpcClient
     /// <summary>
     /// Validates whether the user exists and is active.
     /// </summary>
-    Task<UserInfoDto?> ValidateUserAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<UserInfoDto?> ValidateUser(Guid userId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets user information.
     /// </summary>
-    Task<UserInfoDto?> GetUserInfoAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<UserInfoDto?> GetUserInfo(Guid userId, CancellationToken cancellationToken = default);
 }

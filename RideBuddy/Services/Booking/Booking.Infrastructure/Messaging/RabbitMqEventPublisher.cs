@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using Booking.Application.Interfaces;
-using Booking.Domain.Common;
+using SharedKernel;
 using Booking.Infrastructure.Persistence;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
@@ -28,7 +28,7 @@ public class RabbitMqEventPublisher : IEventPublisher
         _logger = logger;
     }
 
-    public async Task PublishAsync<T>(T domainEvent, CancellationToken cancellationToken = default) 
+    public async Task Publish<T>(T domainEvent, CancellationToken cancellationToken = default) 
         where T : DomainEvent
     {
         // Save to outbox first (transactional guarantee)
@@ -47,7 +47,7 @@ public class RabbitMqEventPublisher : IEventPublisher
         await TryPublishToRabbitMq(outboxMessage);
     }
 
-    public async Task PublishManyAsync(IEnumerable<DomainEvent> domainEvents, CancellationToken cancellationToken = default)
+    public async Task PublishMany(IEnumerable<DomainEvent> domainEvents, CancellationToken cancellationToken = default)
     {
         var outboxMessages = domainEvents.Select(e => new OutboxMessage
         {

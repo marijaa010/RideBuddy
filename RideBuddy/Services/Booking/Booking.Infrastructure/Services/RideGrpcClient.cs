@@ -20,7 +20,7 @@ public class RideGrpcClient : IRideGrpcClient
         _logger = logger;
     }
 
-    public async Task<RideInfoDto?> GetRideInfoAsync(Guid rideId, CancellationToken cancellationToken = default)
+    public async Task<RideInfoDto?> GetRideInfo(Guid rideId, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -52,10 +52,9 @@ public class RideGrpcClient : IRideGrpcClient
             throw;
         }
     }
-
-    public async Task<bool> CheckAvailabilityAsync(
-        Guid rideId,
-        int seatsRequested,
+    public async Task<bool> CheckAvailability(
+        Guid rideId, 
+        int seatsRequested, 
         CancellationToken cancellationToken = default)
     {
         try
@@ -75,10 +74,9 @@ public class RideGrpcClient : IRideGrpcClient
             return false;
         }
     }
-
-    public async Task<bool> ReserveSeatsAsync(
-        Guid rideId,
-        int seatsCount,
+    public async Task<bool> ReserveSeats(
+        Guid rideId, 
+        int seatsCount, 
         CancellationToken cancellationToken = default)
     {
         try
@@ -106,10 +104,9 @@ public class RideGrpcClient : IRideGrpcClient
             return false;
         }
     }
-
-    public async Task<bool> ReleaseSeatsAsync(
-        Guid rideId,
-        int seatsCount,
+    public async Task<bool> ReleaseSeats(
+        Guid rideId, 
+        int seatsCount, 
         CancellationToken cancellationToken = default)
     {
         try

@@ -1,4 +1,4 @@
-namespace Booking.Domain.Common;
+namespace SharedKernel;
 
 /// <summary>
 /// Base class for aggregate root entities.

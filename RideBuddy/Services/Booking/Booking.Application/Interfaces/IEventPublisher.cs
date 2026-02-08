@@ -1,4 +1,4 @@
-using Booking.Domain.Common;
+using SharedKernel;
 
 namespace Booking.Application.Interfaces;
 
@@ -10,11 +10,11 @@ public interface IEventPublisher
     /// <summary>
     /// Publishes a domain event to RabbitMQ.
     /// </summary>
-    Task PublishAsync<T>(T domainEvent, CancellationToken cancellationToken = default) 
+    Task Publish<T>(T domainEvent, CancellationToken cancellationToken = default) 
         where T : DomainEvent;
 
     /// <summary>
     /// Publishes multiple events at once.
     /// </summary>
-    Task PublishManyAsync(IEnumerable<DomainEvent> domainEvents, CancellationToken cancellationToken = default);
+    Task PublishMany(IEnumerable<DomainEvent> domainEvents, CancellationToken cancellationToken = default);
 }

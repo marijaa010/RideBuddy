@@ -37,7 +37,7 @@ public class RejectBookingCommandHandler : IRequestHandler<RejectBookingCommand,
             request.DriverId,
             request.BookingId);
 
-        var booking = await _unitOfWork.Bookings.GetByIdAsync(request.BookingId, cancellationToken);
+        var booking = await _unitOfWork.Bookings.GetById(request.BookingId, cancellationToken);
 
         if (booking is null)
         {
@@ -58,16 +58,16 @@ public class RejectBookingCommandHandler : IRequestHandler<RejectBookingCommand,
             ? "Rejected by driver"
             : request.Reason;
 
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        await _unitOfWork.BeginTransaction(cancellationToken);
 
         try
         {
             booking.Reject(reason);
-            await _unitOfWork.Bookings.UpdateAsync(booking, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.Bookings.Update(booking, cancellationToken);
+            await _unitOfWork.SaveChanges(cancellationToken);
 
             // Release the reserved seats
-            var seatsReleased = await _rideClient.ReleaseSeatsAsync(
+            var seatsReleased = await _rideClient.ReleaseSeats(
                 booking.RideId.Value,
                 booking.SeatsBooked.Value,
                 cancellationToken);
@@ -79,10 +79,10 @@ public class RejectBookingCommandHandler : IRequestHandler<RejectBookingCommand,
                     request.BookingId);
             }
 
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+            await _unitOfWork.CommitTransaction(cancellationToken);
 
             // Publish domain events (BookingRejectedEvent → Notification Service)
-            await _eventPublisher.PublishManyAsync(booking.DomainEvents, cancellationToken);
+            await _eventPublisher.PublishMany(booking.DomainEvents, cancellationToken);
             booking.ClearDomainEvents();
 
             _logger.LogInformation("Booking {BookingId} rejected by driver", request.BookingId);
@@ -92,13 +92,13 @@ public class RejectBookingCommandHandler : IRequestHandler<RejectBookingCommand,
         catch (BookingDomainException ex)
         {
             _logger.LogWarning(ex, "Could not reject booking {BookingId}", request.BookingId);
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            await _unitOfWork.RollbackTransaction(cancellationToken);
             return Result.Failure(ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error rejecting booking {BookingId}", request.BookingId);
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            await _unitOfWork.RollbackTransaction(cancellationToken);
             return Result.Failure("An error occurred while rejecting the booking.");
         }
     }

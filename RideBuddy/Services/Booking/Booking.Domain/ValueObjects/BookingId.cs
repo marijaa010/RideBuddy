@@ -1,4 +1,4 @@
-using Booking.Domain.Common;
+using SharedKernel;
 using Booking.Domain.Exceptions;
 
 namespace Booking.Domain.ValueObjects;

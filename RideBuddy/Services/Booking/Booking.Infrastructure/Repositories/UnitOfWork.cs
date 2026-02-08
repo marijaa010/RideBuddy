@@ -21,17 +21,17 @@ public class UnitOfWork : IUnitOfWork
 
     public IBookingRepository Bookings => _bookings ??= new BookingRepository(_context);
 
-    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public async Task<int> SaveChanges(CancellationToken cancellationToken = default)
     {
         return await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
+    public async Task BeginTransaction(CancellationToken cancellationToken = default)
     {
         _transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
     }
 
-    public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
+    public async Task CommitTransaction(CancellationToken cancellationToken = default)
     {
         if (_transaction is null)
             throw new InvalidOperationException("Transaction has not been started.");
@@ -47,7 +47,7 @@ public class UnitOfWork : IUnitOfWork
         }
     }
 
-    public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
+    public async Task RollbackTransaction(CancellationToken cancellationToken = default)
     {
         if (_transaction is null)
             return;

@@ -11,26 +11,26 @@ public interface IBookingRepository
     /// <summary>
     /// Gets a booking by its ID.
     /// </summary>
-    Task<BookingEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<BookingEntity?> GetById(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets all bookings for a specific passenger.
     /// </summary>
-    Task<IReadOnlyList<BookingEntity>> GetByPassengerIdAsync(
+    Task<IReadOnlyList<BookingEntity>> GetByPassengerId(
         Guid passengerId, 
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets all bookings for a specific ride.
     /// </summary>
-    Task<IReadOnlyList<BookingEntity>> GetByRideIdAsync(
+    Task<IReadOnlyList<BookingEntity>> GetByRideId(
         Guid rideId, 
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets bookings by status for a specific passenger.
     /// </summary>
-    Task<IReadOnlyList<BookingEntity>> GetByPassengerAndStatusAsync(
+    Task<IReadOnlyList<BookingEntity>> GetByPassengerAndStatus(
         Guid passengerId, 
         BookingStatus status,
         CancellationToken cancellationToken = default);
@@ -38,7 +38,7 @@ public interface IBookingRepository
     /// <summary>
     /// Checks if an active booking exists for a passenger on a specific ride.
     /// </summary>
-    Task<bool> ExistsActiveBookingAsync(
+    Task<bool> ExistsActiveBooking(
         Guid passengerId, 
         Guid rideId, 
         CancellationToken cancellationToken = default);
@@ -46,17 +46,17 @@ public interface IBookingRepository
     /// <summary>
     /// Adds a new booking.
     /// </summary>
-    Task AddAsync(BookingEntity booking, CancellationToken cancellationToken = default);
+    Task Add(BookingEntity booking, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates an existing booking.
     /// </summary>
-    Task UpdateAsync(BookingEntity booking, CancellationToken cancellationToken = default);
+    Task Update(BookingEntity booking, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the total number of booked seats for a specific ride.
     /// </summary>
-    Task<int> GetTotalBookedSeatsForRideAsync(
+    Task<int> GetTotalBookedSeatsForRide(
         Guid rideId, 
         CancellationToken cancellationToken = default);
 }
