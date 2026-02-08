@@ -9,7 +9,7 @@ using User.Domain.Entities;
 namespace User.Infrastructure.Auth;
 
 /// <summary>
-/// JWT token generator following the course pattern.
+/// JWT token generator.
 /// Uses SymmetricSecurityKey with HMAC-SHA256.
 /// </summary>
 public class JwtTokenGenerator : IJwtTokenGenerator

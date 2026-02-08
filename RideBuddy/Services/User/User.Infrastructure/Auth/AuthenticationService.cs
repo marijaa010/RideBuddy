@@ -10,7 +10,6 @@ namespace User.Infrastructure.Auth;
 
 /// <summary>
 /// Authentication service implemented using ASP.NET Core Identity.
-/// Follows the course pattern with UserManager for user CRUD and password management.
 /// </summary>
 public class AuthenticationService : IAuthenticationService
 {
@@ -87,7 +86,7 @@ public class AuthenticationService : IAuthenticationService
 
         _logger.LogInformation("Created Identity user {UserId}", userId);
 
-        // Assign role (same pattern as course's RegistrationControllerBase)
+        // Assign role
         var roleExists = await _roleManager.RoleExistsAsync(role);
         if (roleExists)
         {

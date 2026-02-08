@@ -20,7 +20,7 @@ public class UserGrpcClient : IUserGrpcClient
         _logger = logger;
     }
 
-    public async Task<UserInfoDto?> ValidateUserAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<UserInfoDto?> ValidateUser(Guid userId, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -49,7 +49,7 @@ public class UserGrpcClient : IUserGrpcClient
         }
     }
 
-    public async Task<UserInfoDto?> GetUserInfoAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<UserInfoDto?> GetUserInfo(Guid userId, CancellationToken cancellationToken = default)
     {
         try
         {

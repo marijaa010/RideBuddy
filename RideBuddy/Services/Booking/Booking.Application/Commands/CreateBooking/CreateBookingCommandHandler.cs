@@ -44,7 +44,7 @@ public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand,
             request.RideId);
 
         // Saga Step 1: Validate user via gRPC
-        var userInfo = await _userClient.ValidateUserAsync(request.PassengerId, cancellationToken);
+        var userInfo = await _userClient.ValidateUser(request.PassengerId, cancellationToken);
         if (userInfo is null || !userInfo.IsValid)
         {
             _logger.LogWarning("Passenger {PassengerId} is not valid", request.PassengerId);
@@ -52,7 +52,7 @@ public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand,
         }
 
         // Saga Step 2: Check ride availability via gRPC
-        var rideInfo = await _rideClient.GetRideInfoAsync(request.RideId, cancellationToken);
+        var rideInfo = await _rideClient.GetRideInfo(request.RideId, cancellationToken);
         if (rideInfo is null)
         {
             _logger.LogWarning("Ride {RideId} not found", request.RideId);
@@ -71,7 +71,7 @@ public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand,
         }
 
         // Saga Step 3: Check if an active booking already exists
-        var existingBooking = await _unitOfWork.Bookings.ExistsActiveBookingAsync(
+        var existingBooking = await _unitOfWork.Bookings.ExistsActiveBooking(
             request.PassengerId, 
             request.RideId, 
             cancellationToken);
@@ -87,17 +87,18 @@ public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand,
             request.PassengerId,
             request.SeatsToBook,
             rideInfo.PricePerSeat,
-            driverId: rideInfo.DriverId);
+            rideInfo.Currency,
+            rideInfo.DriverId);
 
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        await _unitOfWork.BeginTransaction(cancellationToken);
 
         try
         {
-            await _unitOfWork.Bookings.AddAsync(booking, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.Bookings.Add(booking, cancellationToken);
+            await _unitOfWork.SaveChanges(cancellationToken);
 
             // Saga Step 5: Reserve seats via gRPC
-            var seatsReserved = await _rideClient.ReserveSeatsAsync(
+            var seatsReserved = await _rideClient.ReserveSeats(
                 request.RideId, 
                 request.SeatsToBook, 
                 cancellationToken);
@@ -110,21 +111,21 @@ public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand,
                     booking.Id);
                 
                 booking.Reject("Could not reserve seats on the ride.");
-                await _unitOfWork.Bookings.UpdateAsync(booking, cancellationToken);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-                await _unitOfWork.CommitTransactionAsync(cancellationToken);
+                await _unitOfWork.Bookings.Update(booking, cancellationToken);
+                await _unitOfWork.SaveChanges(cancellationToken);
+                await _unitOfWork.CommitTransaction(cancellationToken);
 
                 return Result.Failure<BookingDto>("Could not reserve seats. Please try again.");
             }
 
             // Saga Step 6: Confirm booking
             booking.Confirm();
-            await _unitOfWork.Bookings.UpdateAsync(booking, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+            await _unitOfWork.Bookings.Update(booking, cancellationToken);
+            await _unitOfWork.SaveChanges(cancellationToken);
+            await _unitOfWork.CommitTransaction(cancellationToken);
 
             // Saga Step 7: Publish domain events
-            await _eventPublisher.PublishManyAsync(booking.DomainEvents, cancellationToken);
+            await _eventPublisher.PublishMany(booking.DomainEvents, cancellationToken);
             booking.ClearDomainEvents();
 
             _logger.LogInformation(
@@ -137,10 +138,10 @@ public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand,
         {
             _logger.LogError(ex, "Error creating booking. Starting rollback.");
             
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            await _unitOfWork.RollbackTransaction(cancellationToken);
 
             // Compensation - release seats if they were reserved
-            await _rideClient.ReleaseSeatsAsync(request.RideId, request.SeatsToBook, cancellationToken);
+            await _rideClient.ReleaseSeats(request.RideId, request.SeatsToBook, cancellationToken);
 
             return Result.Failure<BookingDto>("An error occurred while creating the booking.");
         }

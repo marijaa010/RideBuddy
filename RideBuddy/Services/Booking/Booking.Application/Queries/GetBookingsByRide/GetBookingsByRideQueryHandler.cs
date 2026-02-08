@@ -22,7 +22,7 @@ public class GetBookingsByRideQueryHandler
         GetBookingsByRideQuery request, 
         CancellationToken cancellationToken)
     {
-        var bookings = await _repository.GetByRideIdAsync(request.RideId, cancellationToken);
+        var bookings = await _repository.GetByRideId(request.RideId, cancellationToken);
 
         return bookings.Select(MapToDto).ToList();
     }

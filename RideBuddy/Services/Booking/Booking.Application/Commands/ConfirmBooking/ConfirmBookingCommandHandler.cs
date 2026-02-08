@@ -30,7 +30,7 @@ public class ConfirmBookingCommandHandler : IRequestHandler<ConfirmBookingComman
     {
         _logger.LogInformation("Confirming booking {BookingId}", request.BookingId);
 
-        var booking = await _unitOfWork.Bookings.GetByIdAsync(request.BookingId, cancellationToken);
+        var booking = await _unitOfWork.Bookings.GetById(request.BookingId, cancellationToken);
 
         if (booking is null)
         {
@@ -40,10 +40,10 @@ public class ConfirmBookingCommandHandler : IRequestHandler<ConfirmBookingComman
         try
         {
             booking.Confirm();
-            await _unitOfWork.Bookings.UpdateAsync(booking, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.Bookings.Update(booking, cancellationToken);
+            await _unitOfWork.SaveChanges(cancellationToken);
 
-            await _eventPublisher.PublishManyAsync(booking.DomainEvents, cancellationToken);
+            await _eventPublisher.PublishMany(booking.DomainEvents, cancellationToken);
             booking.ClearDomainEvents();
 
             _logger.LogInformation("Booking {BookingId} successfully confirmed", request.BookingId);

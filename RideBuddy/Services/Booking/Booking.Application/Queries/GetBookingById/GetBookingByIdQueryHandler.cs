@@ -19,7 +19,7 @@ public class GetBookingByIdQueryHandler : IRequestHandler<GetBookingByIdQuery, B
 
     public async Task<BookingDto?> Handle(GetBookingByIdQuery request, CancellationToken cancellationToken)
     {
-        var booking = await _repository.GetByIdAsync(request.BookingId, cancellationToken);
+        var booking = await _repository.GetById(request.BookingId, cancellationToken);
 
         return booking is null ? null : MapToDto(booking);
     }

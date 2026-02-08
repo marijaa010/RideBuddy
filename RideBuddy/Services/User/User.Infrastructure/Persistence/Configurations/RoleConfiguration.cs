@@ -6,7 +6,6 @@ namespace User.Infrastructure.Persistence.Configurations;
 
 /// <summary>
 /// Seeds the default roles into the database.
-/// Same pattern as the course's RoleConfiguration.
 /// </summary>
 public class RoleConfiguration : IEntityTypeConfiguration<IdentityRole>
 {
