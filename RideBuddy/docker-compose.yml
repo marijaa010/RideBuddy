@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------
+  # PostgreSQL — Booking Service (port 5434)
+  # ---------------------------------------------------------------
+  bookingdb:
+    image: postgres:16-alpine
+    container_name: ridebuddy-bookingdb
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: BookingDb
+    ports:
+      - "5434:5432"
+    volumes:
+      - bookingdb-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d BookingDb"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ---------------------------------------------------------------
+  # PostgreSQL — User Service (port 5435)
+  # ---------------------------------------------------------------
+  userdb:
+    image: postgres:16-alpine
+    container_name: ridebuddy-userdb
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: UserDb
+    ports:
+      - "5435:5432"
+    volumes:
+      - userdb-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d UserDb"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ---------------------------------------------------------------
+  # PostgreSQL + PostGIS — Ride Service (port 5433)
+  # ---------------------------------------------------------------
+  ridedb:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: ridebuddy-ridedb
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: RideDb
+    ports:
+      - "5433:5432"
+    volumes:
+      - ridedb-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d RideDb"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ---------------------------------------------------------------
+  # RabbitMQ (AMQP 5672, Management UI 15672)
+  # ---------------------------------------------------------------
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: ridebuddy-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------
+  # Redis — caching (port 6379)
+  # ---------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: ridebuddy-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  bookingdb-data:
+  userdb-data:
+  ridedb-data:
+  rabbitmq-data:
+  redis-data:
