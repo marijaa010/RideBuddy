@@ -87,7 +87,7 @@ public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand,
             request.PassengerId,
             request.SeatsToBook,
             rideInfo.PricePerSeat,
-            rideInfo.DriverId);
+            driverId: rideInfo.DriverId);
 
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
 

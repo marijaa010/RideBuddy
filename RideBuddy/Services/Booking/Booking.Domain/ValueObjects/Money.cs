@@ -1,3 +1,4 @@
+//using System.Linq;
 using Booking.Domain.Common;
 using Booking.Domain.Exceptions;
 
@@ -28,22 +29,18 @@ public class Money : ValueObject
     /// Creates a new Money instance.
     /// </summary>
     /// <param name="amount">Amount (must be >= 0)</param>
-    /// <param name="currency">Currency code (default: RSD)</param>
-    public static Money Create(decimal amount, string currency = "RSD")
+    /// <param name="currency">Currency code (e.g. RSD, EUR)</param>
+    public static Money Create(decimal amount, string currency)
     {
         if (amount < 0)
             throw new BookingDomainException("Amount cannot be negative.");
 
-        if (string.IsNullOrWhiteSpace(currency))
-            throw new BookingDomainException("Currency must be specified.");
+        ValidateCurrency(currency);
 
-        return new Money(amount, currency.ToUpperInvariant());
+        var trimmed = currency.Trim();
+
+        return new Money(amount, trimmed.ToUpperInvariant());
     }
-
-    /// <summary>
-    /// Returns zero amount for the specified currency.
-    /// </summary>
-    public static Money Zero(string currency = "RSD") => new(0, currency);
 
     /// <summary>
     /// Adds two monetary amounts.
@@ -68,6 +65,15 @@ public class Money : ValueObject
     {
         yield return Amount;
         yield return Currency;
+    }
+
+    private static void ValidateCurrency(string currency)
+    {
+        if (string.IsNullOrWhiteSpace(currency))
+            throw new BookingDomainException("Currency must be specified.");
+        var trimmed = currency.Trim();
+        if (trimmed.Length != 3 || !trimmed.All(char.IsLetter))
+            throw new BookingDomainException("Currency must be a three-letter alphabetic code (ISO 4217).");
     }
 
     public override string ToString() => $"{Amount:N2} {Currency}";
