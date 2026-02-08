@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using Booking.Application.Interfaces;
-using Booking.Domain.Common;
+using SharedKernel;
 using Booking.Infrastructure.Persistence;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;

@@ -1,4 +1,4 @@
-using Booking.Domain.Common;
+using SharedKernel;
 
 namespace Booking.Domain.Events;
 
