@@ -134,6 +134,6 @@ public class MoneyTests
     {
         var money = Money.Create(1500m, "RSD");
 
-        money.ToString().Should().Contain("1.500,00").And.Contain("RSD");
+        money.ToString().Should().Contain("1,500.00").And.Contain("RSD");
     }
 }

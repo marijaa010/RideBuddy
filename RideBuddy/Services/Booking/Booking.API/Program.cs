@@ -57,6 +57,9 @@ builder.Services.AddInfrastructureServices(builder.Configuration);
 // JWT Authentication
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
+// Health checks
+builder.Services.AddHealthChecks();
+
 // CORS
 builder.Services.AddCors(options =>
 {
@@ -91,6 +94,7 @@ app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 Log.Information("Booking Service starting on port {Port}", builder.Configuration["Urls"] ?? "5003");
 

@@ -76,5 +76,5 @@ public class Money : ValueObject
             throw new BookingDomainException("Currency must be a three-letter alphabetic code (ISO 4217).");
     }
 
-    public override string ToString() => $"{Amount:N2} {Currency}";
+    public override string ToString() => $"{Amount.ToString("N2", System.Globalization.CultureInfo.InvariantCulture)} {Currency}";
 }
