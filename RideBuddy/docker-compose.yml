@@ -1,8 +1,9 @@
 # =================================================================
 #  RideBuddy — Docker Compose
 # =================================================================
-#  Secrets are read from .env (git-ignored).
+#  Secrets are read from .env
 #  Start everything:  docker compose up --build -d
+#  API Gateway:       http://localhost:5000
 #  Swagger UIs:       http://localhost:5001/swagger
 #                     http://localhost:5002/swagger
 #                     http://localhost:5003/swagger
@@ -204,6 +205,34 @@ services:
       timeout: 5s
       retries: 5
       start_period: 15s
+    <<: *service-defaults
+
+  # ---------------------------------------------------------------
+  # API Gateway — Ocelot :5000
+  # ---------------------------------------------------------------
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ApiGateway/Dockerfile
+    container_name: ridebuddy-api-gateway
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      ASPNETCORE_URLS: "http://+:5000"
+    ports:
+      - "5000:5000"
+    depends_on:
+      user-service:
+        condition: service_healthy
+      ride-service:
+        condition: service_healthy
+      booking-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     <<: *service-defaults
 
 # ── Volumes ──────────────────────────────────────────────────────
