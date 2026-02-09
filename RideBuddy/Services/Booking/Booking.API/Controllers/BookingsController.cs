@@ -1,4 +1,5 @@
 ﻿using Booking.Application.Commands.CancelBooking;
+using Booking.Application.Commands.CompleteBooking;
 using Booking.Application.Commands.ConfirmBooking;
 using Booking.Application.Commands.CreateBooking;
 using Booking.Application.Commands.RejectBooking;
@@ -174,9 +175,42 @@ public class BookingsController : ControllerBase
         if (result.IsFailure)
         {
             _logger.LogWarning("Failed to reject booking {BookingId}: {Error}", id, result.Error);
-            return BadRequest(new 
-            { error = result.Error,
+            return BadRequest(new
+            {
+                error = result.Error,
                 message = $"Unable to reject booking '{id}'. Please verify you are the ride owner and the booking is in a pending state."
+            });
+        }
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Driver marks a confirmed booking as completed after the ride is finished.
+    /// </summary>
+    /// <param name="id">Booking ID</param>
+    /// <returns>No content if successful</returns>
+    [HttpPut("{id:guid}/complete")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> CompleteBooking(Guid id)
+    {
+        var command = new CompleteBookingCommand
+        {
+            BookingId = id,
+            UserId = GetUserIdFromToken()
+        };
+
+        var result = await _mediator.Send(command);
+
+        if (result.IsFailure)
+        {
+            _logger.LogWarning("Failed to complete booking {BookingId}: {Error}", id, result.Error);
+            return BadRequest(new
+            {
+                error = result.Error,
+                message = $"Unable to complete booking '{id}'. Please verify you are the ride owner and the booking is in a confirmed state."
             });
         }
 
