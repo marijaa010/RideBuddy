@@ -11,9 +11,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.ConfigureKestrel(options =>
 {
     // REST API endpoint
-    options.ListenLocalhost(5002, o => o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1);
+    options.ListenAnyIP(5002, o => o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1);
     // gRPC endpoint (requires HTTP/2)
-    options.ListenLocalhost(50052, o => o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2);
+    options.ListenAnyIP(50052, o => o.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2);
 });
 
 // Configure Serilog
@@ -69,6 +69,9 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 // gRPC server
 builder.Services.AddGrpc();
 
+// Health checks
+builder.Services.AddHealthChecks();
+
 // CORS
 builder.Services.AddCors(options =>
 {
@@ -105,6 +108,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapGrpcService<RideGrpcService>();
+app.MapHealthChecks("/health");
 
 Log.Information("Ride Service starting — REST on 5002, gRPC on 50052");
 

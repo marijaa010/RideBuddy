@@ -294,6 +294,10 @@ paket-files/
 # CodeRush
 .cr/
 
+# Environment variables
+.env
+*.env.local
+
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
