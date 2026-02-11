@@ -60,7 +60,7 @@ public class CancelBookingCommandHandler : IRequestHandler<CancelBookingCommand,
         }
 
         var reason = string.IsNullOrWhiteSpace(request.Reason) 
-            ? "Cancelled by user" 
+            ? "Cancelled by " + (booking.PassengerId.Value == request.UserId ? "passenger" : "driver")
             : request.Reason;
 
         await _unitOfWork.BeginTransaction(cancellationToken);
