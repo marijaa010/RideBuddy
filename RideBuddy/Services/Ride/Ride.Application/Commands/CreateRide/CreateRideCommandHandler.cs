@@ -40,11 +40,15 @@ public class CreateRideCommandHandler : IRequestHandler<CreateRideCommand, Resul
         }
 
         // Step 2: Create ride
+        var departureTimeUtc = request.DepartureTime.Kind == DateTimeKind.Utc
+            ? request.DepartureTime
+            : request.DepartureTime.ToUniversalTime();
+
         var ride = RideEntity.Create(
             request.DriverId,
             request.OriginName, request.OriginLatitude, request.OriginLongitude,
             request.DestinationName, request.DestinationLatitude, request.DestinationLongitude,
-            request.DepartureTime,
+            departureTimeUtc,
             request.AvailableSeats,
             request.PricePerSeat,
             request.Currency,

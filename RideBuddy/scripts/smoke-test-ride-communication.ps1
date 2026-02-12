@@ -5,7 +5,8 @@ param(
     [switch]$SkipBuild,
     [switch]$SkipDirectGrpcCheck,
     [switch]$IncludeCancellationCheck,
-    [switch]$IncludeRideEndpointChecks
+    [switch]$IncludeRideEndpointChecks,
+    [switch]$IncludeRoleAuthorizationChecks
 )
 
 Set-StrictMode -Version Latest
@@ -66,6 +67,29 @@ function Invoke-JsonPost {
     )
 
     return Invoke-RestMethod -Method Post -Uri $Uri -ContentType "application/json" -Body ($Body | ConvertTo-Json -Depth 10) -Headers $Headers
+}
+
+function Assert-HttpCallFails {
+    param(
+        [scriptblock]$Action,
+        [string]$FailureMessage
+    )
+
+    try {
+        & $Action
+        throw $FailureMessage
+    }
+    catch {
+        if ($_.Exception -is [System.Net.WebException] -or $_.Exception.Message -like "*Response status code does not indicate success*") {
+            return
+        }
+
+        if ($_.Exception.Message -eq $FailureMessage) {
+            throw
+        }
+
+        throw
+    }
 }
 
 if ([string]::IsNullOrWhiteSpace($ComposeProjectRoot)) {
@@ -165,7 +189,7 @@ try {
                 throw "Proto file not found at: $protoPath"
             }
 
-            $payload = "{\"" + "ride_id\"" + ":\"" + $rideId + "\",\"" + "seats_requested\"" + ":1}"
+            $payload = @{ ride_id = $rideId; seats_requested = 1 } | ConvertTo-Json -Compress
             $grpcOut = & grpcurl -plaintext -import-path $ComposeProjectRoot -proto $protoPath -d $payload localhost:50052 ride.RideGrpc/CheckAvailability
             Write-Host $grpcOut
         }
@@ -263,6 +287,18 @@ try {
         $rideAfterComplete = Invoke-RestMethod -Method Get -Uri "http://localhost:5002/api/rides/$rideEndpointId"
         if ([int]$rideAfterComplete.status -ne 2) {
             throw "Expected ride status Completed (2) after complete, got $($rideAfterComplete.status)."
+        }
+    }
+
+    if ($IncludeRoleAuthorizationChecks) {
+        Write-Host "[STEP] Role check: passenger should not be able to start driver's ride"
+        Assert-HttpCallFails -FailureMessage "Passenger was able to start a driver-only ride." -Action {
+            Invoke-RestMethod -Method Put -Uri "http://localhost:5002/api/rides/$rideId/start" -Headers @{ Authorization = "Bearer $passengerToken" } | Out-Null
+        }
+
+        Write-Host "[STEP] Role check: passenger should not be able to complete driver's ride"
+        Assert-HttpCallFails -FailureMessage "Passenger was able to complete a driver-only ride." -Action {
+            Invoke-RestMethod -Method Put -Uri "http://localhost:5002/api/rides/$rideId/complete" -Headers @{ Authorization = "Bearer $passengerToken" } | Out-Null
         }
     }
 
