@@ -22,6 +22,12 @@ public class RideCommunicationSmokeTests
         await RunSmokeScriptAsync("-IncludeRideEndpointChecks");
     }
 
+    [Fact]
+    public async Task Ride_Role_Authorization_Smoke_Test_Should_Pass()
+    {
+        await RunSmokeScriptAsync("-IncludeRoleAuthorizationChecks");
+    }
+
     private static async Task RunSmokeScriptAsync(string additionalArguments = "")
     {
         if (!ShouldRunSmokeTests())
