@@ -6,7 +6,10 @@
       "DownstreamPathTemplate": "/api/auth/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        { "Host": "localhost", "Port": 5001 }
+        {
+          "Host": "localhost",
+          "Port": 5001
+        }
       ]
     },
     {
@@ -15,7 +18,10 @@
       "DownstreamPathTemplate": "/api/users/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        { "Host": "localhost", "Port": 5001 }
+        {
+          "Host": "localhost",
+          "Port": 5001
+        }
       ]
     },
     {
@@ -24,7 +30,10 @@
       "DownstreamPathTemplate": "/api/rides/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        { "Host": "localhost", "Port": 5002 }
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
       ]
     },
     {
@@ -33,7 +42,10 @@
       "DownstreamPathTemplate": "/api/rides",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        { "Host": "localhost", "Port": 5002 }
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
       ]
     },
     {
@@ -42,7 +54,10 @@
       "DownstreamPathTemplate": "/api/bookings/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        { "Host": "localhost", "Port": 5003 }
+        {
+          "Host": "localhost",
+          "Port": 5003
+        }
       ]
     },
     {
@@ -51,7 +66,22 @@
       "DownstreamPathTemplate": "/api/bookings",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        { "Host": "localhost", "Port": 5003 }
+        {
+          "Host": "localhost",
+          "Port": 5003
+        }
+      ]
+    },
+    {
+      "UpstreamPathTemplate": "/api/notifications/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "OPTIONS" ],
+      "DownstreamPathTemplate": "/api/notifications/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5004
+        }
       ]
     },
     {
@@ -60,7 +90,10 @@
       "DownstreamPathTemplate": "/swagger/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        { "Host": "localhost", "Port": 5001 }
+        {
+          "Host": "localhost",
+          "Port": 5001
+        }
       ]
     },
     {
@@ -69,7 +102,10 @@
       "DownstreamPathTemplate": "/swagger/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        { "Host": "localhost", "Port": 5002 }
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
       ]
     },
     {
@@ -78,7 +114,22 @@
       "DownstreamPathTemplate": "/swagger/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
-        { "Host": "localhost", "Port": 5003 }
+        {
+          "Host": "localhost",
+          "Port": 5003
+        }
+      ]
+    },
+    {
+      "UpstreamPathTemplate": "/api/notification-swagger/{everything}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamPathTemplate": "/swagger/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5004
+        }
       ]
     }
   ],

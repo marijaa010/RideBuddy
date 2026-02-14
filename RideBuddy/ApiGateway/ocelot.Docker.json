@@ -80,6 +80,24 @@
       "DownstreamHostAndPorts": [
         { "Host": "booking-service", "Port": 5003 }
       ]
+    },
+    {
+      "UpstreamPathTemplate": "/api/notifications/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "OPTIONS" ],
+      "DownstreamPathTemplate": "/api/notifications/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        { "Host": "notification-service", "Port": 5004 }
+      ]
+    },
+    {
+      "UpstreamPathTemplate": "/api/notification-swagger/{everything}",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamPathTemplate": "/swagger/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        { "Host": "notification-service", "Port": 5004 }
+      ]
     }
   ],
   "GlobalConfiguration": {

@@ -7,10 +7,10 @@
 #  Swagger UIs:       http://localhost:5001/swagger
 #                     http://localhost:5002/swagger
 #                     http://localhost:5003/swagger
+#                     http://localhost:5004/swagger
 #  RabbitMQ UI:       http://localhost:15672  (guest / guest)
 # =================================================================
 
-# ── Shared environment blocks (YAML anchors) ────────────────────
 x-rabbitmq-env: &rabbitmq-env
   RabbitMQ__Host: rabbitmq
   RabbitMQ__Port: "5672"
@@ -27,12 +27,8 @@ x-service-defaults: &service-defaults
   networks:
     - ridebuddy
 
-# ── Services ─────────────────────────────────────────────────────
 services:
 
-  # ---------------------------------------------------------------
-  # PostgreSQL — User Service
-  # ---------------------------------------------------------------
   userdb:
     image: postgres:16-alpine
     container_name: ridebuddy-userdb
@@ -51,9 +47,6 @@ services:
       retries: 5
     <<: *service-defaults
 
-  # ---------------------------------------------------------------
-  # PostgreSQL + PostGIS — Ride Service
-  # ---------------------------------------------------------------
   ridedb:
     image: postgis/postgis:16-3.4-alpine
     container_name: ridebuddy-ridedb
@@ -72,9 +65,6 @@ services:
       retries: 5
     <<: *service-defaults
 
-  # ---------------------------------------------------------------
-  # PostgreSQL — Booking Service
-  # ---------------------------------------------------------------
   bookingdb:
     image: postgres:16-alpine
     container_name: ridebuddy-bookingdb
@@ -93,9 +83,24 @@ services:
       retries: 5
     <<: *service-defaults
 
-  # ---------------------------------------------------------------
-  # RabbitMQ (AMQP 5672, Management UI 15672)
-  # ---------------------------------------------------------------
+  notificationdb:
+    image: postgres:16-alpine
+    container_name: ridebuddy-notificationdb
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: NotificationDb
+    ports:
+      - "5436:5432"
+    volumes:
+      - notificationdb-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d NotificationDb"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    <<: *service-defaults
+
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
     container_name: ridebuddy-rabbitmq
@@ -114,9 +119,6 @@ services:
       retries: 5
     <<: *service-defaults
 
-  # ---------------------------------------------------------------
-  # User Service — REST :5001, gRPC :50051
-  # ---------------------------------------------------------------
   user-service:
     build:
       context: .
@@ -142,9 +144,6 @@ services:
       start_period: 15s
     <<: *service-defaults
 
-  # ---------------------------------------------------------------
-  # Ride Service — REST :5002, gRPC :50052
-  # ---------------------------------------------------------------
   ride-service:
     build:
       context: .
@@ -173,9 +172,6 @@ services:
       start_period: 15s
     <<: *service-defaults
 
-  # ---------------------------------------------------------------
-  # Booking Service — REST :5003
-  # ---------------------------------------------------------------
   booking-service:
     build:
       context: .
@@ -207,9 +203,41 @@ services:
       start_period: 15s
     <<: *service-defaults
 
-  # ---------------------------------------------------------------
-  # API Gateway — Ocelot :5000
-  # ---------------------------------------------------------------
+  notification-service:
+    build:
+      context: .
+      dockerfile: Services/Notification/Dockerfile
+    container_name: ridebuddy-notification-service
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: "http://+:5004"
+      ConnectionStrings__NotificationDb: "Host=notificationdb;Port=5432;Database=NotificationDb;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      GrpcServices__UserService: "http://user-service:50051"
+      SmtpSettings__Host: "sandbox.smtp.mailtrap.io"
+      SmtpSettings__Port: "587"
+      SmtpSettings__Username: ${SMTP_USERNAME}
+      SmtpSettings__Password: ${SMTP_PASSWORD}
+      SmtpSettings__FromEmail: "noreply@ridebuddy.com"
+      SmtpSettings__FromName: "RideBuddy"
+      SmtpSettings__UseSsl: "true"
+      <<: [*rabbitmq-env, *jwt-env]
+    ports:
+      - "5004:5004"
+    depends_on:
+      notificationdb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5004/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    <<: *service-defaults
+
   api-gateway:
     build:
       context: .
@@ -235,14 +263,13 @@ services:
       start_period: 10s
     <<: *service-defaults
 
-# ── Volumes ──────────────────────────────────────────────────────
 volumes:
   userdb-data:
   ridedb-data:
   bookingdb-data:
+  notificationdb-data:
   rabbitmq-data:
 
-# ── Network ──────────────────────────────────────────────────────
 networks:
   ridebuddy:
     driver: bridge

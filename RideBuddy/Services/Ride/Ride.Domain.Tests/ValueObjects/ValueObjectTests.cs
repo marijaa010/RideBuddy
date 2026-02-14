@@ -19,9 +19,9 @@ public class LocationTests
     [InlineData("", 0, 0)]
     [InlineData(" ", 0, 0)]
     [InlineData(null, 0, 0)]
-    public void Create_EmptyName_ThrowsException(string name, double lat, double lng)
+    public void Create_EmptyName_ThrowsException(string? name, double lat, double lng)
     {
-        var act = () => Location.Create(name, lat, lng);
+        var act = () => Location.Create(name!, lat, lng);
         act.Should().Throw<RideDomainException>();
     }
 

@@ -81,21 +81,30 @@ public static class ServiceCollectionExtension
                 UserName = configuration["RabbitMQ:Username"] ?? "guest",
                 Password = configuration["RabbitMQ:Password"] ?? "guest",
                 VirtualHost = configuration["RabbitMQ:VirtualHost"] ?? "/",
-                // Allow the app to start even if RabbitMQ is not yet available
                 AutomaticRecoveryEnabled = true,
                 NetworkRecoveryInterval = TimeSpan.FromSeconds(10)
             };
 
-            try
+            var logger = sp.GetRequiredService<ILoggerFactory>()
+                .CreateLogger("RabbitMQ");
+
+            for (int i = 1; i <= 10; i++)
             {
-                return factory.CreateConnection();
+                try
+                {
+                    var connection = factory.CreateConnection();
+                    logger.LogInformation("Connected to RabbitMQ on attempt {Attempt}", i);
+                    return connection;
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning("RabbitMQ connection attempt {Attempt}/10 failed: {Message}", i, ex.Message);
+                    Thread.Sleep(3000);
+                }
             }
-            catch (Exception ex)
-            {
-                var logger = sp.GetRequiredService<ILogger<RabbitMqEventPublisher>>();
-                logger.LogWarning(ex, "Could not connect to RabbitMQ on startup. Outbox processor will retry.");
-                return null!;
-            }
+
+            logger.LogError("Could not connect to RabbitMQ after 10 attempts");
+            return null!;
         });
 
         services.AddScoped<IEventPublisher, RabbitMqEventPublisher>();

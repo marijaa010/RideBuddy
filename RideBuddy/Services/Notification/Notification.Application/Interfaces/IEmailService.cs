@@ -1,0 +1,9 @@
+namespace Notification.Application.Interfaces;
+
+/// <summary>
+/// Service for sending emails via SMTP.
+/// </summary>
+public interface IEmailService
+{
+    Task SendAsync(string toEmail, string toName, string subject, string htmlBody, CancellationToken ct = default);
+}
