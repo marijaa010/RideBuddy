@@ -1,0 +1,64 @@
+<div class="container">
+  <div class="create-header">
+    <h1>Offer a Ride</h1>
+    <p>Share your journey and help others travel</p>
+  </div>
+
+  <div class="create-card">
+    <form [formGroup]="rideForm" (ngSubmit)="onSubmit()">
+      <div class="alert alert-error" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <h3>Origin</h3>
+      <div class="form-group">
+        <label for="originName">City/Location *</label>
+        <input type="text" id="originName" formControlName="originName" placeholder="e.g., Belgrade, Novi Sad, Niš" />
+      </div>
+
+      <h3>Destination</h3>
+      <div class="form-group">
+        <label for="destinationName">City/Location *</label>
+        <input type="text" id="destinationName" formControlName="destinationName" placeholder="e.g., Belgrade, Novi Sad, Niš" />
+      </div>
+
+      <h3>Ride Details</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="departureTime">Departure Date & Time *</label>
+          <input type="datetime-local" id="departureTime" formControlName="departureTime" />
+        </div>
+        <div class="form-group">
+          <label for="availableSeats">Available Seats *</label>
+          <input type="number" id="availableSeats" formControlName="availableSeats" min="1" max="8" />
+        </div>
+        <div class="form-group">
+          <label for="pricePerSeat">Price per Seat *</label>
+          <input type="number" id="pricePerSeat" formControlName="pricePerSeat" min="0" placeholder="1000" />
+        </div>
+        <div class="form-group">
+          <label for="currency">Currency *</label>
+          <select id="currency" formControlName="currency">
+            <option value="RSD">RSD</option>
+            <option value="EUR">EUR</option>
+            <option value="USD">USD</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group checkbox-group">
+        <label>
+          <input type="checkbox" formControlName="autoConfirmBookings" />
+          Auto-confirm bookings (passengers can book instantly)
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn" (click)="router.navigate(['/rides'])">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="rideForm.invalid || isLoading">
+          {{ isLoading ? 'Creating...' : 'Create Ride' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

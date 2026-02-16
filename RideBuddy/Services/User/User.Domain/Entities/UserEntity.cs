@@ -33,7 +33,8 @@ public class UserEntity : AggregateRoot
     public PhoneNumber PhoneNumber { get; private set; } = null!;
 
     /// <summary>
-    /// User's role in the system (Driver, Passenger, Both).
+    /// User's role in the system (Driver or Passenger).
+    /// Drivers can also book rides as passengers.
     /// </summary>
     public UserRole Role { get; private set; }
 

@@ -3,6 +3,7 @@
 # =================================================================
 #  Secrets are read from .env
 #  Start everything:  docker compose up --build -d
+#  Frontend:          http://localhost:8080
 #  API Gateway:       http://localhost:5000
 #  Swagger UIs:       http://localhost:5001/swagger
 #                     http://localhost:5002/swagger
@@ -261,6 +262,21 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+    <<: *service-defaults
+
+  # ---------------------------------------------------------------
+  # Frontend — Angular 18 SPA with nginx :80
+  # ---------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ridebuddy-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      api-gateway:
+        condition: service_healthy
     <<: *service-defaults
 
 volumes:

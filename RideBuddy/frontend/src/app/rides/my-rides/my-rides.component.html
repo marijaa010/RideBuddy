@@ -1,0 +1,98 @@
+<div class="container">
+  <div class="page-header">
+    <h1>My Rides</h1>
+    <p>Manage your offered rides and bookings</p>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">
+    <p>Loading your rides...</p>
+  </div>
+
+  <div class="alert alert-error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <div class="rides-list" *ngIf="!isLoading && rides.length > 0">
+    <div class="ride-card" *ngFor="let ride of rides">
+      <div class="ride-header">
+        <div class="ride-route">
+          <h3>{{ ride.originName }} → {{ ride.destinationName }}</h3>
+          <span class="ride-status" [ngClass]="getRideStatusClass(ride.status)">
+            {{ getRideStatusLabel(ride.status) }}
+          </span>
+        </div>
+        <div class="ride-meta">
+          <span class="departure-time">{{ formatDate(ride.departureTime) }}</span>
+        </div>
+      </div>
+
+      <div class="ride-details">
+        <div class="detail-item">
+          <span class="label"><i class="fa-solid fa-chair"></i> Available Seats</span>
+          <span class="value">{{ ride.availableSeats }} / {{ ride.totalSeats }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label"><i class="fa-solid fa-coins"></i> Price per Seat</span>
+          <span class="value">{{ ride.pricePerSeat }} {{ ride.currency }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label"><i class="fa-solid fa-bolt"></i> Auto-confirm</span>
+          <span class="value">{{ ride.autoConfirmBookings ? 'Yes' : 'No' }}</span>
+        </div>
+      </div>
+
+      <div class="bookings-section" *ngIf="getBookingsForRide(ride.id).length > 0">
+        <h4>
+          Bookings ({{ getBookingsForRide(ride.id).length }})
+          <span class="booking-summary" *ngIf="getPendingBookingsCount(ride.id) > 0">
+            - {{ getPendingBookingsCount(ride.id) }} pending
+          </span>
+        </h4>
+
+        <div class="bookings-list">
+          <div class="booking-item" *ngFor="let booking of getBookingsForRide(ride.id)">
+            <div class="booking-info">
+              <div class="booking-passenger">
+                <strong>Passenger ID:</strong> {{ booking.passengerId.substring(0, 8) }}...
+              </div>
+              <div class="booking-details-row">
+                <span><i class="fa-solid fa-chair"></i> {{ booking.seatsBooked }} seat(s)</span>
+                <span><i class="fa-solid fa-coins"></i> {{ booking.totalPrice }} {{ booking.currency }}</span>
+                <span class="booking-date"><i class="fa-regular fa-calendar"></i> {{ formatDate(booking.bookedAt) }}</span>
+              </div>
+              <span class="booking-status" [ngClass]="getStatusClass(booking.status)">
+                {{ getStatusLabel(booking.status) }}
+              </span>
+            </div>
+
+            <div class="booking-actions" *ngIf="booking.status === 0">
+              <button 
+                class="btn btn-success btn-sm" 
+                (click)="confirmBooking(booking.id, ride.id)"
+              >
+                <i class="fa-solid fa-check"></i> Confirm
+              </button>
+              <button 
+                class="btn btn-danger btn-sm" 
+                (click)="rejectBooking(booking.id, ride.id)"
+              >
+                <i class="fa-solid fa-xmark"></i> Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="no-bookings" *ngIf="getBookingsForRide(ride.id).length === 0">
+        <p>No bookings yet</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && rides.length === 0">
+    <div class="empty-icon"><i class="fa-solid fa-car-side"></i></div>
+    <h3>No rides offered yet</h3>
+    <p>Start by creating your first ride!</p>
+    <a routerLink="/rides/create" class="btn btn-primary">Offer a Ride</a>
+  </div>
+</div>

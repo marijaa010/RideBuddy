@@ -1,7 +1,9 @@
 using Booking.Application.DTOs;
+using Booking.Application.Interfaces;
 using Booking.Domain.Entities;
 using Booking.Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Booking.Application.Queries.GetBookingsByPassenger;
 
@@ -12,10 +14,17 @@ public class GetBookingsByPassengerQueryHandler
     : IRequestHandler<GetBookingsByPassengerQuery, IReadOnlyList<BookingDto>>
 {
     private readonly IBookingRepository _repository;
+    private readonly IRideGrpcClient _rideClient;
+    private readonly ILogger<GetBookingsByPassengerQueryHandler> _logger;
 
-    public GetBookingsByPassengerQueryHandler(IBookingRepository repository)
+    public GetBookingsByPassengerQueryHandler(
+        IBookingRepository repository,
+        IRideGrpcClient rideClient,
+        ILogger<GetBookingsByPassengerQueryHandler> logger)
     {
         _repository = repository;
+        _rideClient = rideClient;
+        _logger = logger;
     }
 
     public async Task<IReadOnlyList<BookingDto>> Handle(
@@ -38,7 +47,27 @@ public class GetBookingsByPassengerQueryHandler
                 cancellationToken);
         }
 
-        return bookings.Select(MapToDto).ToList();
+        // Fetch ride information for each booking
+        var bookingDtos = new List<BookingDto>();
+        foreach (var booking in bookings)
+        {
+            var dto = MapToDto(booking);
+            
+            // Try to fetch ride info
+            try
+            {
+                var rideInfo = await _rideClient.GetRideInfo(booking.RideId.Value, cancellationToken);
+                dto = dto with { Ride = rideInfo };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to fetch ride info for ride {RideId}", booking.RideId.Value);
+            }
+            
+            bookingDtos.Add(dto);
+        }
+
+        return bookingDtos;
     }
 
     private static BookingDto MapToDto(BookingEntity booking)

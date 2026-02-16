@@ -1,0 +1,55 @@
+<div class="container">
+  <div class="page-header">
+    <h1>My Bookings</h1>
+    <p>Manage your ride reservations</p>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">
+    <p>Loading your bookings...</p>
+  </div>
+
+  <div class="alert alert-error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <div class="bookings-list" *ngIf="!isLoading && bookings.length > 0">
+    <div class="booking-card" *ngFor="let booking of bookings">
+      <div class="booking-header">
+        <div class="booking-route">
+          <span class="route">{{ booking.ride?.origin }} → {{ booking.ride?.destination }}</span>
+        </div>
+        <span class="status-badge" [ngClass]="getStatusClass(booking.status)">
+          {{ getStatusLabel(booking.status) }}
+        </span>
+      </div>
+
+      <div class="booking-details">
+        <div class="detail-item">
+          <span class="label"><i class="fa-regular fa-clock"></i> Departure</span>
+          <span class="value">{{ formatDate(booking.ride?.departureTime || '') }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label"><i class="fa-solid fa-chair"></i> Seats</span>
+          <span class="value">{{ booking.seatsBooked }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label"><i class="fa-solid fa-coins"></i> Total Price</span>
+          <span class="value price">{{ booking.totalPrice }} {{ booking.currency }}</span>
+        </div>
+      </div>
+
+      <div class="booking-actions" *ngIf="booking.status === 0 || booking.status === 1">
+        <button class="btn btn-danger btn-sm" (click)="cancelBooking(booking.id)">
+          Cancel Booking
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && bookings.length === 0">
+    <div class="empty-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+    <h3>No bookings yet</h3>
+    <p>Start exploring rides and book your first journey!</p>
+    <a routerLink="/rides" class="btn btn-primary">Find Rides</a>
+  </div>
+</div>

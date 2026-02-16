@@ -79,9 +79,14 @@ public class AuthenticationService : IAuthenticationService
         var result = await _userManager.CreateAsync(appUser, password);
         if (!result.Succeeded)
         {
-            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            _logger.LogWarning("Failed to create Identity user: {Errors}", errors);
-            throw new UserDomainException($"Failed to create user: {errors}");
+            // Format validation errors for user display
+            var errors = result.Errors.Select(e => e.Description).ToList();
+            var errorMessage = errors.Count == 1 
+                ? errors[0] 
+                : "Password requirements: " + string.Join("; ", errors);
+            
+            _logger.LogWarning("Failed to create Identity user: {Errors}", errorMessage);
+            throw new UserDomainException(errorMessage);
         }
 
         _logger.LogInformation("Created Identity user {UserId}", userId);

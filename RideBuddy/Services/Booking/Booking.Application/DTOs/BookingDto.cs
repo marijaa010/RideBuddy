@@ -20,4 +20,5 @@ public record BookingDto
     public DateTime? CancelledAt { get; init; }
     public DateTime? CompletedAt { get; init; }
     public string? CancellationReason { get; init; }
+    public RideInfoDto? Ride { get; init; }
 }

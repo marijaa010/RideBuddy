@@ -1,0 +1,105 @@
+<div class="container">
+  <div class="page-header">
+    <h1>Find Your Ride</h1>
+    <p>Search for available rides to your destination</p>
+  </div>
+
+  <div class="search-card">
+    <form [formGroup]="searchForm" (ngSubmit)="searchRides()">
+      <div class="search-grid">
+        <div class="form-group">
+          <label for="origin">From</label>
+          <input 
+            type="text" 
+            id="origin" 
+            formControlName="origin"
+            placeholder="Origin city"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="destination">To</label>
+          <input 
+            type="text" 
+            id="destination" 
+            formControlName="destination"
+            placeholder="Destination city"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="date">Date</label>
+          <input 
+            type="date" 
+            id="date" 
+            formControlName="date"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>&nbsp;</label>
+          <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+            {{ isLoading ? 'Searching...' : 'Search' }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="alert alert-error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <div class="loading" *ngIf="isLoading">
+    <p><i class="fa-solid fa-magnifying-glass"></i> Searching for rides...</p>
+  </div>
+
+  <div class="rides-grid" *ngIf="!isLoading && rides.length > 0">
+    <div class="ride-card" 
+         *ngFor="let ride of rides" 
+         [routerLink]="['/rides', ride.id]"
+         [class.fully-booked]="ride.availableSeats === 0">
+      
+      <div class="fully-booked-badge" *ngIf="ride.availableSeats === 0">
+        <i class="fa-solid fa-ban"></i> Fully Booked
+      </div>
+      
+      <div class="ride-route">
+        <div class="route-point">
+          <i class="fa-solid fa-location-dot route-icon"></i>
+          <span class="route-name">{{ ride.originName }}</span>
+        </div>
+        <div class="route-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+        <div class="route-point">
+          <i class="fa-solid fa-flag-checkered route-icon"></i>
+          <span class="route-name">{{ ride.destinationName }}</span>
+        </div>
+      </div>
+
+      <div class="ride-details">
+        <div class="detail-item">
+          <span class="label"><i class="fa-regular fa-clock"></i> Departure</span>
+          <span class="value">{{ formatDate(ride.departureTime) }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label"><i class="fa-solid fa-chair"></i> Available Seats</span>
+          <span class="value">{{ ride.availableSeats }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="label"><i class="fa-solid fa-coins"></i> Price per Seat</span>
+          <span class="value price">{{ ride.pricePerSeat }} {{ ride.currency }}</span>
+        </div>
+      </div>
+
+      <div class="ride-footer">
+        <span class="btn btn-primary btn-sm">View Details</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && rides.length === 0">
+    <div class="empty-icon"><i class="fa-solid fa-car-side"></i></div>
+    <h3>No rides found</h3>
+    <p>Try adjusting your search criteria or check back later</p>
+  </div>
+</div>
