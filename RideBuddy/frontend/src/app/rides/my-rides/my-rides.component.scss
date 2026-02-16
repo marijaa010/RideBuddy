@@ -1,0 +1,291 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.page-header {
+  margin-bottom: 40px;
+  padding: 32px 0;
+
+  h1 {
+    font-size: 42px;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+    letter-spacing: -1px;
+  }
+
+  p {
+    color: var(--text-secondary);
+    font-size: 18px;
+  }
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #6c757d;
+}
+
+.alert {
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+
+  &.alert-error {
+    background-color: #fee;
+    color: #c33;
+    border: 1px solid #fcc;
+  }
+}
+
+.rides-list {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin-bottom: 40px;
+}
+
+.ride-card {
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  padding: 28px;
+  transition: all 0.3s;
+  border: 1px solid var(--border-light);
+
+  &:hover {
+    box-shadow: 0 8px 28px rgba(102, 126, 234, 0.15);
+    transform: translateY(-3px);
+  }
+}
+
+.ride-header {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--border-light);
+
+  .ride-route {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+
+    h3 {
+      font-size: 24px;
+      color: var(--text-primary);
+      margin: 0;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+
+    .ride-status {
+      padding: 8px 18px;
+      border-radius: 24px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+
+      &.scheduled { 
+        background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+        color: #004085;
+      }
+      &.in-progress { 
+        background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+        color: #d63031;
+      }
+      &.completed { 
+        background: linear-gradient(135deg, #81ecec 0%, #00b894 100%);
+        color: #00695c;
+      }
+      &.cancelled { 
+        background: linear-gradient(135deg, #fab1a0 0%, #e17055 100%);
+        color: #7f0000;
+      }
+    }
+  }
+
+  .ride-meta {
+    color: var(--text-secondary);
+    font-size: 15px;
+    font-weight: 500;
+
+    .departure-time {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+  }
+}
+
+.ride-details {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 24px;
+
+  .detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    .label {
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .value {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+  }
+}
+
+.bookings-section {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 2px solid var(--border-light);
+
+  h4 {
+    font-size: 18px;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    font-weight: 700;
+
+    .booking-summary {
+      font-size: 15px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  }
+}
+
+.bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.booking-item {
+  background: linear-gradient(135deg, #f8f9fa 0%, #f0f4f8 100%);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--border-light);
+  transition: all 0.3s;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    transform: translateX(4px);
+  }
+
+  .booking-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .booking-passenger {
+      font-size: 16px;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .booking-details-row {
+      display: flex;
+      gap: 20px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 500;
+
+      .booking-date {
+        color: var(--text-muted);
+        font-size: 13px;
+      }
+    }
+
+    .booking-status {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      width: fit-content;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+
+      &.pending { 
+        background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+        color: #d63031;
+      }
+      &.confirmed { 
+        background: linear-gradient(135deg, #81ecec 0%, #00b894 100%);
+        color: #00695c;
+      }
+      &.cancelled { 
+        background: linear-gradient(135deg, #fab1a0 0%, #e17055 100%);
+        color: #7f0000;
+      }
+      &.completed { 
+        background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+        color: #004085;
+      }
+      &.rejected { 
+        background: linear-gradient(135deg, #ff7675 0%, #d63031 100%);
+        color: white;
+      }
+    }
+  }
+
+  .booking-actions {
+    display: flex;
+    gap: 10px;
+  }
+}
+
+.no-bookings {
+  text-align: center;
+  padding: 32px;
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 15px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 100px 20px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+
+  .empty-icon {
+    font-size: 80px;
+    margin-bottom: 24px;
+    opacity: 0.6;
+  }
+
+  h3 {
+    font-size: 28px;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+
+  p {
+    color: var(--text-secondary);
+    font-size: 16px;
+    margin-bottom: 32px;
+  }
+}

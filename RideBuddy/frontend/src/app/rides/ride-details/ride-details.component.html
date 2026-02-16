@@ -1,0 +1,116 @@
+<div class="container">
+  <div class="loading" *ngIf="isLoading">
+    <p>Loading ride details...</p>
+  </div>
+
+  <div *ngIf="!isLoading && ride" class="ride-details-container">
+    <div class="ride-header">
+      <h1>Ride Details</h1>
+      <button class="btn" (click)="router.navigate(['/rides'])">← Back to List</button>
+    </div>
+
+    <div class="alert alert-success" *ngIf="bookingSuccess">
+      <i class="fa-solid fa-circle-check"></i> Booking successful! Redirecting to your bookings...
+    </div>
+
+    <div class="alert alert-error" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <div class="details-card">
+      <div class="route-section">
+        <div class="route-visual">
+          <div class="route-point start">
+            <i class="fa-solid fa-location-dot icon"></i>
+            <div>
+              <div class="label">FROM</div>
+              <div class="location">{{ ride.originName }}</div>
+            </div>
+          </div>
+          <div class="route-line"></div>
+          <div class="route-point end">
+            <i class="fa-solid fa-flag-checkered icon"></i>
+            <div>
+              <div class="label">TO</div>
+              <div class="location">{{ ride.destinationName }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <i class="fa-regular fa-clock icon"></i>
+          <div>
+            <div class="label">Departure Time</div>
+            <div class="value">{{ formatDate(ride.departureTime) }}</div>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <i class="fa-solid fa-chair icon"></i>
+          <div>
+            <div class="label">Available Seats</div>
+            <div class="value">{{ ride.availableSeats }} / {{ ride.totalSeats }}</div>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <i class="fa-solid fa-coins icon"></i>
+          <div>
+            <div class="label">Price per Seat</div>
+            <div class="value price">{{ ride.pricePerSeat }} {{ ride.currency }}</div>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <i class="fa-solid fa-circle-check icon"></i>
+          <div>
+            <div class="label">Booking Type</div>
+            <div class="value">{{ ride.autoConfirmBookings ? 'Instant Booking' : 'Requires Approval' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="booking-section" *ngIf="ride.availableSeats > 0 && !bookingSuccess">
+        <h3>Book This Ride</h3>
+        <div class="booking-form">
+          <div class="form-group">
+            <label for="seats">Number of Seats</label>
+            <input 
+              type="number" 
+              id="seats" 
+              [(ngModel)]="seatsToBook"
+              [min]="1"
+              [max]="ride.availableSeats"
+            />
+          </div>
+          <div class="booking-summary">
+            <div class="summary-row">
+              <span>Seats:</span>
+              <span>{{ seatsToBook }}</span>
+            </div>
+            <div class="summary-row total">
+              <span>Total:</span>
+              <span>{{ seatsToBook * ride.pricePerSeat }} {{ ride.currency }}</span>
+            </div>
+          </div>
+          <button 
+            class="btn btn-success btn-block" 
+            (click)="bookRide()"
+            [disabled]="isBooking || seatsToBook < 1 || seatsToBook > ride.availableSeats"
+          >
+            {{ isBooking ? 'Booking...' : 'Confirm Booking' }}
+          </button>
+          <p class="booking-note" *ngIf="!authService.isAuthenticated()">
+            Please <a routerLink="/identity/login">login</a> to book this ride
+          </p>
+        </div>
+      </div>
+
+      <div class="no-seats" *ngIf="ride.availableSeats === 0">
+        <p><i class="fa-solid fa-circle-xmark"></i> This ride is fully booked</p>
+      </div>
+    </div>
+  </div>
+</div>

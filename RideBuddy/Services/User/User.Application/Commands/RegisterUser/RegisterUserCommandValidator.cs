@@ -31,8 +31,7 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
         RuleFor(x => x.Role)
             .NotEmpty().WithMessage("Role is required.")
             .Must(role => role.Equals("Driver", StringComparison.OrdinalIgnoreCase) ||
-                          role.Equals("Passenger", StringComparison.OrdinalIgnoreCase) ||
-                          role.Equals("Both", StringComparison.OrdinalIgnoreCase))
-            .WithMessage("Role must be Driver, Passenger, or Both.");
+                          role.Equals("Passenger", StringComparison.OrdinalIgnoreCase))
+            .WithMessage("Role must be Driver or Passenger.");
     }
 }

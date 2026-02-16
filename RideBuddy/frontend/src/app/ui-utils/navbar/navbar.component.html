@@ -1,0 +1,31 @@
+<nav class="navbar">
+  <div class="container">
+    <div class="navbar-brand">
+      <a routerLink="/" class="logo">
+        <i class="fa-solid fa-car logo-icon"></i>
+        <span class="logo-text">RideBuddy</span>
+      </a>
+    </div>
+
+    <div class="navbar-menu">
+      <a routerLink="/rides" routerLinkActive="active" class="nav-link">Find Rides</a>
+      
+      <ng-container *ngIf="(currentUser$ | async) as user; else guestMenu">
+        <a *ngIf="authService.isDriver()" routerLink="/rides/create" routerLinkActive="active" class="nav-link">Offer Ride</a>
+        <a *ngIf="authService.isDriver()" routerLink="/rides/my-rides" routerLinkActive="active" class="nav-link">My Rides</a>
+        <a routerLink="/bookings" routerLinkActive="active" class="nav-link">My Bookings</a>
+        
+        <div class="user-menu">
+          <span class="user-name">{{ user.firstName }} {{ user.lastName }}</span>
+          <span class="user-role" [class.driver]="user.role === 'Driver'">{{ user.role }}</span>
+          <button (click)="logout()" class="btn btn-sm btn-logout">Logout</button>
+        </div>
+      </ng-container>
+
+      <ng-template #guestMenu>
+        <a routerLink="/identity/login" class="nav-link">Login</a>
+        <a routerLink="/identity/register" class="btn btn-primary btn-sm">Sign Up</a>
+      </ng-template>
+    </div>
+  </div>
+</nav>

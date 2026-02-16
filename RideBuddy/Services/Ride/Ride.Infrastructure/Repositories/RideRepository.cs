@@ -55,7 +55,8 @@ public class RideRepository : IRideRepository
 
         if (date.HasValue)
         {
-            var dateStart = date.Value.Date;
+            // Ensure DateTime has UTC kind for PostgreSQL timestamp with time zone
+            var dateStart = DateTime.SpecifyKind(date.Value.Date, DateTimeKind.Utc);
             var dateEnd = dateStart.AddDays(1);
             query = query.Where(r => r.DepartureTime >= dateStart && r.DepartureTime < dateEnd);
         }

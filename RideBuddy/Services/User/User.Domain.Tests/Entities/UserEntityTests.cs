@@ -151,9 +151,9 @@ public class UserEntityTests
     {
         var user = CreateValidUser();
 
-        user.ChangeRole(UserRole.Both);
+        user.ChangeRole(UserRole.Driver);
 
-        user.Role.Should().Be(UserRole.Both);
+        user.Role.Should().Be(UserRole.Driver);
         user.Version.Should().Be(1);
     }
 

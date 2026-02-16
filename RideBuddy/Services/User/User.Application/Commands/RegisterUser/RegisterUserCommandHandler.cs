@@ -52,7 +52,7 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
         // Step 2: Parse role
         if (!Enum.TryParse<UserRole>(request.Role, true, out var role))
         {
-            return Result.Failure<AuthResponseDto>($"Invalid role '{request.Role}'. Must be Driver, Passenger, or Both.");
+            return Result.Failure<AuthResponseDto>($"Invalid role '{request.Role}'. Must be Driver or Passenger.");
         }
 
         try
@@ -96,10 +96,17 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
                 User = MapToDto(user)
             });
         }
+        catch (Domain.Exceptions.UserDomainException ex)
+        {
+            // Domain validation errors (like password requirements) - return to user
+            _logger.LogWarning("Registration validation failed for {Email}: {Error}", request.Email, ex.Message);
+            return Result.Failure<AuthResponseDto>(ex.Message);
+        }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error registering user with email {Email}", request.Email);
-            return Result.Failure<AuthResponseDto>("An error occurred during registration.");
+            // Unexpected errors - log but don't expose details
+            _logger.LogError(ex, "Unexpected error registering user with email {Email}", request.Email);
+            return Result.Failure<AuthResponseDto>("An unexpected error occurred during registration.");
         }
     }
 
