@@ -4,6 +4,8 @@ import { RideService } from '../services/ride.service';
 import { Ride } from '../domain/ride.model';
 import { BookingService } from '../../bookings/services/booking.service';
 import { AuthService } from '../../shared/services/auth.service';
+import { DateFormatterService } from '../../shared/services/date-formatter.service';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-ride-details',
@@ -13,17 +15,17 @@ import { AuthService } from '../../shared/services/auth.service';
 export class RideDetailsComponent implements OnInit {
   ride: Ride | null = null;
   isLoading = false;
-  errorMessage = '';
   seatsToBook = 1;
   isBooking = false;
-  bookingSuccess = false;
 
   constructor(
     private route: ActivatedRoute,
     public router: Router,
     private rideService: RideService,
     private bookingService: BookingService,
-    public authService: AuthService
+    public authService: AuthService,
+    public dateFormatter: DateFormatterService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -41,48 +43,46 @@ export class RideDetailsComponent implements OnInit {
         this.isLoading = false;
       },
       error: (error) => {
-        this.errorMessage = 'Failed to load ride details';
+        this.toastService.error('Failed to load ride details. Please try again.');
         this.isLoading = false;
+        this.router.navigate(['/rides']);
       }
     });
   }
 
   bookRide(): void {
     if (!this.ride || !this.authService.isAuthenticated()) {
+      this.toastService.warning('Please login to book a ride.');
       this.router.navigate(['/identity/login']);
       return;
     }
 
     this.isBooking = true;
-    this.errorMessage = '';
 
     this.bookingService.createBooking({
       rideId: this.ride.id,
       seatsToBook: this.seatsToBook
     }).subscribe({
       next: () => {
-        this.bookingSuccess = true;
         this.isBooking = false;
+        this.toastService.success('Booking confirmed! Redirecting to your bookings...');
         setTimeout(() => {
           this.router.navigate(['/bookings']);
         }, 2000);
       },
       error: (error) => {
         this.isBooking = false;
-        // Backend returns error in 'error' field, not 'message'
-        this.errorMessage = error.error?.error || error.error?.message || 'Failed to book ride. Please try again.';
+        const errorMsg = error.error?.error || error.error?.message || 'Failed to book ride. Please try again.';
+        this.toastService.error(errorMsg);
       }
     });
   }
 
   formatDate(dateStr: string): string {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return this.dateFormatter.formatFullDateTime(dateStr);
+  }
+
+  getCountdown(dateStr: string): string {
+    return this.dateFormatter.getCountdown(dateStr);
   }
 }

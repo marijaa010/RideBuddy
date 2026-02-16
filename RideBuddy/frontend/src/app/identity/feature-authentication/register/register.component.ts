@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../shared/services/auth.service';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-register',
@@ -10,13 +11,13 @@ import { AuthService } from '../../../shared/services/auth.service';
 })
 export class RegisterComponent implements OnInit {
   registerForm: FormGroup;
-  errorMessage = '';
   isLoading = false;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {
     this.registerForm = this.fb.group({
       firstName: ['', [Validators.required, Validators.minLength(2)]],
@@ -44,22 +45,27 @@ export class RegisterComponent implements OnInit {
 
   onSubmit(): void {
     if (this.registerForm.invalid) {
+      if (this.registerForm.errors?.['passwordMismatch']) {
+        this.toastService.warning('Passwords do not match.');
+      } else {
+        this.toastService.warning('Please fill in all required fields correctly.');
+      }
       return;
     }
 
     this.isLoading = true;
-    this.errorMessage = '';
 
     const { confirmPassword, ...registerData } = this.registerForm.value;
 
     this.authService.register(registerData).subscribe({
       next: () => {
+        this.toastService.success('Registration successful! Welcome aboard.');
         this.router.navigate(['/rides']);
       },
       error: (error) => {
         this.isLoading = false;
-        // Backend returns error in 'error' field, not 'message'
-        this.errorMessage = error.error?.error || 'Registration failed. Please try again.';
+        const errorMsg = error.error?.error || 'Registration failed. Please try again.';
+        this.toastService.error(errorMsg);
       }
     });
   }

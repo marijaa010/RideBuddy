@@ -34,6 +34,7 @@ public class GetBookingsByRideQueryHandler
             Id = booking.Id,
             RideId = booking.RideId.Value,
             PassengerId = booking.PassengerId.Value,
+            PassengerName = $"{booking.PassengerFirstName} {booking.PassengerLastName}",
             DriverId = booking.DriverId,
             SeatsBooked = booking.SeatsBooked.Value,
             TotalPrice = booking.TotalPrice.Amount,

@@ -1,0 +1,19 @@
+<div class="toast-container">
+  <div 
+    *ngFor="let toast of toasts"
+    class="toast"
+    [class]="'toast-' + toast.type"
+    [@toastAnimation]
+    (click)="dismiss(toast.id)"
+  >
+    <div class="toast-icon">
+      <i class="fa-solid" [ngClass]="getIcon(toast.type)"></i>
+    </div>
+    <div class="toast-content">
+      <p class="toast-message">{{ toast.message }}</p>
+    </div>
+    <button class="toast-close" (click)="dismiss(toast.id)" type="button">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+</div>

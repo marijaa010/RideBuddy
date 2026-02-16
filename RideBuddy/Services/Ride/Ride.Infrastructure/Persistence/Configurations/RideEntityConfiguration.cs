@@ -24,6 +24,15 @@ public class RideEntityConfiguration : IEntityTypeConfiguration<RideEntity>
             .HasColumnName("DriverId")
             .IsRequired();
 
+        // Driver name fields
+        builder.Property(r => r.DriverFirstName)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        builder.Property(r => r.DriverLastName)
+            .HasMaxLength(100)
+            .IsRequired();
+
         // Origin value object — stored as three columns
         builder.OwnsOne(r => r.Origin, origin =>
         {

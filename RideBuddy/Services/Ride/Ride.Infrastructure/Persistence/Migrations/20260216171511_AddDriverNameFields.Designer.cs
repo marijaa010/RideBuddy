@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Ride.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using Ride.Infrastructure.Persistence;
 namespace Ride.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(RideDbContext))]
-    partial class RideDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260216171511_AddDriverNameFields")]
+    partial class AddDriverNameFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

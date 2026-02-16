@@ -2,6 +2,7 @@ export interface Booking {
   id: string;
   rideId: string;
   passengerId: string;
+  passengerName?: string;
   seatsBooked: number;
   totalPrice: number;
   currency: string;

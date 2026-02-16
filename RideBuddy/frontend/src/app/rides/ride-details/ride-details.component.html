@@ -1,20 +1,14 @@
 <div class="container">
-  <div class="loading" *ngIf="isLoading">
-    <p>Loading ride details...</p>
-  </div>
+  <app-loading-spinner 
+    *ngIf="isLoading" 
+    message="Loading ride details..."
+    size="medium">
+  </app-loading-spinner>
 
   <div *ngIf="!isLoading && ride" class="ride-details-container">
     <div class="ride-header">
       <h1>Ride Details</h1>
       <button class="btn" (click)="router.navigate(['/rides'])">← Back to List</button>
-    </div>
-
-    <div class="alert alert-success" *ngIf="bookingSuccess">
-      <i class="fa-solid fa-circle-check"></i> Booking successful! Redirecting to your bookings...
-    </div>
-
-    <div class="alert alert-error" *ngIf="errorMessage">
-      {{ errorMessage }}
     </div>
 
     <div class="details-card">
@@ -44,6 +38,9 @@
           <div>
             <div class="label">Departure Time</div>
             <div class="value">{{ formatDate(ride.departureTime) }}</div>
+            <div class="countdown-badge" *ngIf="!dateFormatter.isPast(ride.departureTime)">
+              <i class="fa-solid fa-hourglass-half"></i> Departs in {{ getCountdown(ride.departureTime) }}
+            </div>
           </div>
         </div>
 
@@ -72,7 +69,7 @@
         </div>
       </div>
 
-      <div class="booking-section" *ngIf="ride.availableSeats > 0 && !bookingSuccess">
+      <div class="booking-section" *ngIf="ride.availableSeats > 0">
         <h3>Book This Ride</h3>
         <div class="booking-form">
           <div class="form-group">

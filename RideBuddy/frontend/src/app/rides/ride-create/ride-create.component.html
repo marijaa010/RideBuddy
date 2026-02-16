@@ -6,10 +6,6 @@
 
   <div class="create-card">
     <form [formGroup]="rideForm" (ngSubmit)="onSubmit()">
-      <div class="alert alert-error" *ngIf="errorMessage">
-        {{ errorMessage }}
-      </div>
-
       <h3>Origin</h3>
       <div class="form-group">
         <label for="originName">City/Location *</label>

@@ -17,6 +17,16 @@ public class RideEntity : AggregateRoot
     public DriverId DriverId { get; private set; } = null!;
 
     /// <summary>
+    /// Driver's first name.
+    /// </summary>
+    public string DriverFirstName { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// Driver's last name.
+    /// </summary>
+    public string DriverLastName { get; private set; } = string.Empty;
+
+    /// <summary>
     /// Origin location of the ride.
     /// </summary>
     public Location Origin { get; private set; } = null!;
@@ -89,6 +99,8 @@ public class RideEntity : AggregateRoot
     /// </summary>
     public static RideEntity Create(
         Guid driverId,
+        string driverFirstName,
+        string driverLastName,
         string originName, double originLat, double originLng,
         string destinationName, double destLat, double destLng,
         DateTime departureTime,
@@ -104,6 +116,8 @@ public class RideEntity : AggregateRoot
         {
             Id = Guid.NewGuid(),
             DriverId = DriverId.Create(driverId),
+            DriverFirstName = driverFirstName,
+            DriverLastName = driverLastName,
             Origin = Location.Create(originName, originLat, originLng),
             Destination = Location.Create(destinationName, destLat, destLng),
             DepartureTime = departureTime,

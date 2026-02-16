@@ -46,6 +46,8 @@ public class CreateRideCommandHandler : IRequestHandler<CreateRideCommand, Resul
 
         var ride = RideEntity.Create(
             request.DriverId,
+            userInfo.FirstName,
+            userInfo.LastName,
             request.OriginName, request.OriginLatitude, request.OriginLongitude,
             request.DestinationName, request.DestinationLatitude, request.DestinationLongitude,
             departureTimeUtc,
@@ -72,6 +74,7 @@ public class CreateRideCommandHandler : IRequestHandler<CreateRideCommand, Resul
         {
             Id = ride.Id,
             DriverId = ride.DriverId.Value,
+            DriverName = $"{ride.DriverFirstName} {ride.DriverLastName}",
             OriginName = ride.Origin.Name,
             OriginLatitude = ride.Origin.Latitude,
             OriginLongitude = ride.Origin.Longitude,

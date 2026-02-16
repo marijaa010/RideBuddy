@@ -1,0 +1,36 @@
+<div class="skeleton-loader" [ngSwitch]="type">
+  <!-- Card skeleton -->
+  <div *ngSwitchCase="'card'" class="skeleton-cards">
+    <div class="skeleton-card" *ngFor="let item of items">
+      <div class="skeleton-header">
+        <div class="skeleton-line" style="width: 60%"></div>
+        <div class="skeleton-line" style="width: 30%"></div>
+      </div>
+      <div class="skeleton-body">
+        <div class="skeleton-line" style="width: 80%"></div>
+        <div class="skeleton-line" style="width: 90%"></div>
+        <div class="skeleton-line" style="width: 70%"></div>
+      </div>
+      <div class="skeleton-footer">
+        <div class="skeleton-circle"></div>
+        <div class="skeleton-line" style="width: 40%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- List skeleton -->
+  <div *ngSwitchCase="'list'" class="skeleton-list">
+    <div class="skeleton-list-item" *ngFor="let item of items">
+      <div class="skeleton-circle"></div>
+      <div class="skeleton-content">
+        <div class="skeleton-line" style="width: 70%"></div>
+        <div class="skeleton-line" style="width: 50%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Text skeleton -->
+  <div *ngSwitchCase="'text'" class="skeleton-text">
+    <div class="skeleton-line" *ngFor="let item of items"></div>
+  </div>
+</div>

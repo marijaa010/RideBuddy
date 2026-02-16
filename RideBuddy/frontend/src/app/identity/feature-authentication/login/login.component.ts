@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../shared/services/auth.service';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -10,13 +11,13 @@ import { AuthService } from '../../../shared/services/auth.service';
 })
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
-  errorMessage = '';
   isLoading = false;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -32,19 +33,21 @@ export class LoginComponent implements OnInit {
 
   onSubmit(): void {
     if (this.loginForm.invalid) {
+      this.toastService.warning('Please fill in all required fields correctly.');
       return;
     }
 
     this.isLoading = true;
-    this.errorMessage = '';
 
     this.authService.login(this.loginForm.value).subscribe({
       next: () => {
+        this.toastService.success('Welcome back! Login successful.');
         this.router.navigate(['/rides']);
       },
       error: (error) => {
         this.isLoading = false;
-        this.errorMessage = error.error?.message || 'Login failed. Please check your credentials.';
+        const errorMsg = error.error?.message || 'Login failed. Please check your credentials.';
+        this.toastService.error(errorMsg);
       }
     });
   }

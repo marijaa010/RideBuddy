@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { BookingService } from '../services/booking.service';
 import { Booking } from '../domain/booking.model';
+import { DateFormatterService } from '../../shared/services/date-formatter.service';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-my-bookings',
@@ -10,9 +12,12 @@ import { Booking } from '../domain/booking.model';
 export class MyBookingsComponent implements OnInit {
   bookings: Booking[] = [];
   isLoading = false;
-  errorMessage = '';
 
-  constructor(private bookingService: BookingService) {}
+  constructor(
+    private bookingService: BookingService,
+    public dateFormatter: DateFormatterService,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit(): void {
     this.loadBookings();
@@ -26,7 +31,7 @@ export class MyBookingsComponent implements OnInit {
         this.isLoading = false;
       },
       error: (error) => {
-        this.errorMessage = 'Failed to load bookings';
+        this.toastService.error('Failed to load bookings. Please try again.');
         this.isLoading = false;
       }
     });
@@ -39,22 +44,21 @@ export class MyBookingsComponent implements OnInit {
 
     this.bookingService.cancelBooking(id).subscribe({
       next: () => {
+        this.toastService.success('Booking cancelled successfully.');
         this.loadBookings();
       },
       error: (error) => {
-        this.errorMessage = 'Failed to cancel booking';
+        this.toastService.error('Failed to cancel booking. Please try again.');
       }
     });
   }
 
   formatDate(dateStr: string): string {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return this.dateFormatter.formatRelativeDate(dateStr);
+  }
+
+  getCountdown(dateStr: string): string {
+    return this.dateFormatter.getCountdown(dateStr);
   }
 
   getStatusLabel(status: number): string {
