@@ -6,10 +6,6 @@
     </div>
 
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-      <div class="alert alert-error" *ngIf="errorMessage">
-        {{ errorMessage }}
-      </div>
-
       <div class="form-row">
         <div class="form-group">
           <label for="firstName">First Name</label>

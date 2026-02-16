@@ -7,6 +7,7 @@ import { RideListComponent } from './ride-list/ride-list.component';
 import { RideDetailsComponent } from './ride-details/ride-details.component';
 import { RideCreateComponent } from './ride-create/ride-create.component';
 import { MyRidesComponent } from './my-rides/my-rides.component';
+import { SharedModule } from '../shared/shared.module';
 
 @NgModule({
   declarations: [
@@ -19,7 +20,8 @@ import { MyRidesComponent } from './my-rides/my-rides.component';
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    RidesRoutingModule
+    RidesRoutingModule,
+    SharedModule
   ]
 })
 export class RidesModule { }

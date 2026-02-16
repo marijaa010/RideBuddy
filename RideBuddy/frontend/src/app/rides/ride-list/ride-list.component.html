@@ -46,13 +46,11 @@
     </form>
   </div>
 
-  <div class="alert alert-error" *ngIf="errorMessage">
-    {{ errorMessage }}
-  </div>
-
-  <div class="loading" *ngIf="isLoading">
-    <p><i class="fa-solid fa-magnifying-glass"></i> Searching for rides...</p>
-  </div>
+  <app-loading-spinner 
+    *ngIf="isLoading" 
+    message="Finding available rides..."
+    size="medium">
+  </app-loading-spinner>
 
   <div class="rides-grid" *ngIf="!isLoading && rides.length > 0">
     <div class="ride-card" 
@@ -77,9 +75,17 @@
       </div>
 
       <div class="ride-details">
+        <div class="detail-item" *ngIf="ride.driverName">
+          <span class="label"><i class="fa-solid fa-user"></i> Driver</span>
+          <span class="value">{{ ride.driverName }}</span>
+        </div>
         <div class="detail-item">
           <span class="label"><i class="fa-regular fa-clock"></i> Departure</span>
           <span class="value">{{ formatDate(ride.departureTime) }}</span>
+        </div>
+        <div class="detail-item countdown" *ngIf="!dateFormatter.isPast(ride.departureTime)">
+          <span class="label"><i class="fa-solid fa-hourglass-half"></i> Departs in</span>
+          <span class="value highlight">{{ getCountdown(ride.departureTime) }}</span>
         </div>
         <div class="detail-item">
           <span class="label"><i class="fa-solid fa-chair"></i> Available Seats</span>

@@ -10,6 +10,7 @@ public record BookingDto
     public Guid Id { get; init; }
     public Guid RideId { get; init; }
     public Guid PassengerId { get; init; }
+    public string? PassengerName { get; init; }
     public Guid DriverId { get; init; }
     public int SeatsBooked { get; init; }
     public decimal TotalPrice { get; init; }

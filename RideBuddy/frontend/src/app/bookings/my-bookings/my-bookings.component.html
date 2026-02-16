@@ -4,13 +4,11 @@
     <p>Manage your ride reservations</p>
   </div>
 
-  <div class="loading" *ngIf="isLoading">
-    <p>Loading your bookings...</p>
-  </div>
-
-  <div class="alert alert-error" *ngIf="errorMessage">
-    {{ errorMessage }}
-  </div>
+  <app-loading-spinner 
+    *ngIf="isLoading" 
+    message="Loading your bookings..."
+    size="medium">
+  </app-loading-spinner>
 
   <div class="bookings-list" *ngIf="!isLoading && bookings.length > 0">
     <div class="booking-card" *ngFor="let booking of bookings">
@@ -27,6 +25,10 @@
         <div class="detail-item">
           <span class="label"><i class="fa-regular fa-clock"></i> Departure</span>
           <span class="value">{{ formatDate(booking.ride?.departureTime || '') }}</span>
+        </div>
+        <div class="detail-item countdown" *ngIf="booking.ride && booking.ride.departureTime && !dateFormatter.isPast(booking.ride.departureTime)">
+          <span class="label"><i class="fa-solid fa-hourglass-half"></i> Departs in</span>
+          <span class="value highlight">{{ getCountdown(booking.ride.departureTime) }}</span>
         </div>
         <div class="detail-item">
           <span class="label"><i class="fa-solid fa-chair"></i> Seats</span>

@@ -23,6 +23,16 @@ public class BookingEntity : AggregateRoot
     public PassengerId PassengerId { get; private set; } = null!;
 
     /// <summary>
+    /// Passenger's first name.
+    /// </summary>
+    public string PassengerFirstName { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// Passenger's last name.
+    /// </summary>
+    public string PassengerLastName { get; private set; } = string.Empty;
+
+    /// <summary>
     /// Number of seats booked.
     /// </summary>
     public SeatsCount SeatsBooked { get; private set; } = null!;
@@ -81,6 +91,8 @@ public class BookingEntity : AggregateRoot
     public static BookingEntity Create(
         Guid rideId,
         Guid passengerId,
+        string passengerFirstName,
+        string passengerLastName,
         int seatsBooked,
         decimal pricePerSeat,
         string currency,
@@ -91,6 +103,8 @@ public class BookingEntity : AggregateRoot
             Id = Guid.NewGuid(),
             RideId = RideId.Create(rideId),
             PassengerId = PassengerId.Create(passengerId),
+            PassengerFirstName = passengerFirstName,
+            PassengerLastName = passengerLastName,
             SeatsBooked = SeatsCount.Create(seatsBooked),
             TotalPrice = Money.Create(pricePerSeat * seatsBooked, currency),
             Status = BookingStatus.Pending,

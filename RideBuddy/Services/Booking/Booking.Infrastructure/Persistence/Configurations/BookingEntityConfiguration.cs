@@ -33,6 +33,15 @@ public class BookingEntityConfiguration : IEntityTypeConfiguration<BookingEntity
             .HasColumnName("PassengerId")
             .IsRequired();
 
+        // Passenger name fields
+        builder.Property(b => b.PassengerFirstName)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        builder.Property(b => b.PassengerLastName)
+            .HasMaxLength(100)
+            .IsRequired();
+
         builder.Property(b => b.SeatsBooked)
             .HasConversion(
                 seats => seats.Value,

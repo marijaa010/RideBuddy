@@ -3,6 +3,8 @@ import { RideService } from '../services/ride.service';
 import { BookingService } from '../../bookings/services/booking.service';
 import { Ride } from '../domain/ride.model';
 import { Booking } from '../../bookings/domain/booking.model';
+import { DateFormatterService } from '../../shared/services/date-formatter.service';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-my-rides',
@@ -13,11 +15,12 @@ export class MyRidesComponent implements OnInit {
   rides: Ride[] = [];
   rideBookings: { [rideId: string]: Booking[] } = {};
   isLoading = false;
-  errorMessage = '';
 
   constructor(
     private rideService: RideService,
-    private bookingService: BookingService
+    private bookingService: BookingService,
+    public dateFormatter: DateFormatterService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -26,7 +29,6 @@ export class MyRidesComponent implements OnInit {
 
   loadMyRides(): void {
     this.isLoading = true;
-    this.errorMessage = '';
 
     this.rideService.getMyRides().subscribe({
       next: (rides) => {
@@ -40,7 +42,7 @@ export class MyRidesComponent implements OnInit {
       },
       error: (error) => {
         this.isLoading = false;
-        this.errorMessage = 'Failed to load your rides';
+        this.toastService.error('Failed to load your rides. Please try again.');
       }
     });
   }
@@ -63,11 +65,12 @@ export class MyRidesComponent implements OnInit {
 
     this.bookingService.confirmBooking(bookingId).subscribe({
       next: () => {
-        // Reload bookings for this ride
+        this.toastService.success('Booking confirmed successfully.');
         this.loadBookingsForRide(rideId);
       },
       error: (error) => {
-        alert('Failed to confirm booking: ' + (error.error?.error || 'Unknown error'));
+        const errorMsg = error.error?.error || 'Failed to confirm booking.';
+        this.toastService.error(errorMsg);
       }
     });
   }
@@ -80,11 +83,12 @@ export class MyRidesComponent implements OnInit {
 
     this.bookingService.rejectBooking(bookingId, reason).subscribe({
       next: () => {
-        // Reload bookings for this ride
+        this.toastService.success('Booking rejected.');
         this.loadBookingsForRide(rideId);
       },
       error: (error) => {
-        alert('Failed to reject booking: ' + (error.error?.error || 'Unknown error'));
+        const errorMsg = error.error?.error || 'Failed to reject booking.';
+        this.toastService.error(errorMsg);
       }
     });
   }
@@ -125,14 +129,7 @@ export class MyRidesComponent implements OnInit {
 
   formatDate(dateString: string): string {
     if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return this.dateFormatter.formatRelativeDate(dateString);
   }
 
   getRideStatusLabel(status: number): string {

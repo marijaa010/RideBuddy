@@ -9,6 +9,7 @@ public record RideDto
 {
     public Guid Id { get; init; }
     public Guid DriverId { get; init; }
+    public string? DriverName { get; init; }
     public string OriginName { get; init; } = string.Empty;
     public double OriginLatitude { get; init; }
     public double OriginLongitude { get; init; }

@@ -4,13 +4,11 @@
     <p>Manage your offered rides and bookings</p>
   </div>
 
-  <div class="loading" *ngIf="isLoading">
-    <p>Loading your rides...</p>
-  </div>
-
-  <div class="alert alert-error" *ngIf="errorMessage">
-    {{ errorMessage }}
-  </div>
+  <app-loading-spinner 
+    *ngIf="isLoading" 
+    message="Loading your rides..."
+    size="medium">
+  </app-loading-spinner>
 
   <div class="rides-list" *ngIf="!isLoading && rides.length > 0">
     <div class="ride-card" *ngFor="let ride of rides">
@@ -27,6 +25,10 @@
       </div>
 
       <div class="ride-details">
+        <div class="detail-item countdown" *ngIf="!dateFormatter.isPast(ride.departureTime)">
+          <span class="label"><i class="fa-solid fa-hourglass-half"></i> Departs in</span>
+          <span class="value highlight">{{ dateFormatter.getCountdown(ride.departureTime) }}</span>
+        </div>
         <div class="detail-item">
           <span class="label"><i class="fa-solid fa-chair"></i> Available Seats</span>
           <span class="value">{{ ride.availableSeats }} / {{ ride.totalSeats }}</span>
@@ -53,7 +55,7 @@
           <div class="booking-item" *ngFor="let booking of getBookingsForRide(ride.id)">
             <div class="booking-info">
               <div class="booking-passenger">
-                <strong>Passenger ID:</strong> {{ booking.passengerId.substring(0, 8) }}...
+                <i class="fa-solid fa-user"></i> <strong>{{ booking.passengerName || 'Passenger ID: ' + booking.passengerId.substring(0, 8) + '...' }}</strong>
               </div>
               <div class="booking-details-row">
                 <span><i class="fa-solid fa-chair"></i> {{ booking.seatsBooked }} seat(s)</span>

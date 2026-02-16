@@ -289,3 +289,14 @@
     margin-bottom: 32px;
   }
 }
+
+.countdown {
+  .value.highlight {
+    color: var(--primary);
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}

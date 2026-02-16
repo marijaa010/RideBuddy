@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { RideService } from '../services/ride.service';
 import { getCityCoordinates } from '../services/city-coordinates';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-ride-create',
@@ -12,12 +13,12 @@ import { getCityCoordinates } from '../services/city-coordinates';
 export class RideCreateComponent implements OnInit {
   rideForm: FormGroup;
   isLoading = false;
-  errorMessage = '';
 
   constructor(
     private fb: FormBuilder,
     private rideService: RideService,
-    public router: Router
+    public router: Router,
+    private toastService: ToastService
   ) {
     this.rideForm = this.fb.group({
       originName: ['', Validators.required],
@@ -34,11 +35,11 @@ export class RideCreateComponent implements OnInit {
 
   onSubmit(): void {
     if (this.rideForm.invalid) {
+      this.toastService.warning('Please fill in all required fields correctly.');
       return;
     }
 
     this.isLoading = true;
-    this.errorMessage = '';
 
     const formValue = this.rideForm.value;
     
@@ -62,11 +63,13 @@ export class RideCreateComponent implements OnInit {
 
     this.rideService.createRide(rideData).subscribe({
       next: (ride) => {
+        this.toastService.success('Ride created successfully!');
         this.router.navigate(['/rides', ride.id]);
       },
       error: (error) => {
         this.isLoading = false;
-        this.errorMessage = error.error?.error || 'Failed to create ride. Please try again.';
+        const errorMsg = error.error?.error || 'Failed to create ride. Please try again.';
+        this.toastService.error(errorMsg);
       }
     });
   }
