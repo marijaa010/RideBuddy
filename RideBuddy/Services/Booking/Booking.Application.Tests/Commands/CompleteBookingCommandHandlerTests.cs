@@ -38,6 +38,8 @@ public class CompleteBookingCommandHandlerTests
         var booking = BookingEntity.Create(
             rideId: Guid.NewGuid(),
             passengerId: Guid.NewGuid(),
+            passengerFirstName: "John",
+            passengerLastName: "Doe",
             seatsBooked: 2,
             pricePerSeat: 500m,
             currency: "RSD",
@@ -134,7 +136,7 @@ public class CompleteBookingCommandHandlerTests
     public async Task Handle_PendingBooking_ReturnsFailure()
     {
         var booking = BookingEntity.Create(
-            Guid.NewGuid(), Guid.NewGuid(), 2, 500m, "RSD", _driverId);
+            Guid.NewGuid(), Guid.NewGuid(), "John", "Doe", 2, 500m, "RSD", _driverId);
 
         _bookingRepo
             .Setup(r => r.GetById(booking.Id, It.IsAny<CancellationToken>()))

@@ -96,7 +96,8 @@ public class BookingEntity : AggregateRoot
         int seatsBooked,
         decimal pricePerSeat,
         string currency,
-        Guid driverId)
+        Guid driverId,
+        bool isAutoConfirmed = false)
     {
         var booking = new BookingEntity
         {
@@ -116,9 +117,11 @@ public class BookingEntity : AggregateRoot
             booking.Id,
             rideId,
             passengerId,
+            driverId,
             seatsBooked,
             booking.TotalPrice.Amount,
-            booking.TotalPrice.Currency));
+            booking.TotalPrice.Currency,
+            isAutoConfirmed));
 
         return booking;
     }
@@ -166,6 +169,7 @@ public class BookingEntity : AggregateRoot
             Id,
             RideId.Value,
             PassengerId.Value,
+            DriverId,
             SeatsBooked.Value,
             reason,
             CancelledAt.Value));

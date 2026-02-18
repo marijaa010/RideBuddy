@@ -32,6 +32,7 @@ public record BookingEventDto
     public Guid BookingId { get; init; }
     public Guid RideId { get; init; }
     public Guid PassengerId { get; init; }
+    public Guid DriverId { get; init; }
     public int SeatsBooked { get; init; }
     public int SeatsReleased { get; init; }
     public decimal TotalPrice { get; init; }
@@ -42,4 +43,5 @@ public record BookingEventDto
     public DateTime CancelledAt { get; init; }
     public DateTime RejectedAt { get; init; }
     public DateTime CompletedAt { get; init; }
+    public bool IsAutoConfirmed { get; init; }
 }

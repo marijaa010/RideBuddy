@@ -11,13 +11,15 @@ public class BookingEntityTests
     private readonly Guid _rideId = Guid.NewGuid();
     private readonly Guid _passengerId = Guid.NewGuid();
     private readonly Guid _driverId = Guid.NewGuid();
+    private readonly string _passengerFirstName = "John";
+    private readonly string _passengerLastName = "Doe";
     private const int Seats = 2;
     private const decimal PricePerSeat = 500m;
     private const string Currency = "RSD";
 
     private BookingEntity CreateBooking()
     {
-        return BookingEntity.Create(_rideId, _passengerId, Seats, PricePerSeat, Currency,_driverId);
+        return BookingEntity.Create(_rideId, _passengerId, _passengerFirstName, _passengerLastName, Seats, PricePerSeat, Currency,_driverId);
     }
 
     [Fact]

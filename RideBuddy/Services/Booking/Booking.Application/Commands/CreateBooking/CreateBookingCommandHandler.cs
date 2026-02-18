@@ -91,7 +91,8 @@ public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand,
             request.SeatsToBook,
             rideInfo.PricePerSeat,
             rideInfo.Currency,
-            rideInfo.DriverId);
+            rideInfo.DriverId,
+            rideInfo.AutoConfirmBookings);
 
         await _unitOfWork.BeginTransaction(cancellationToken);
 

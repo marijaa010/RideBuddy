@@ -11,6 +11,8 @@ public class RideEntityTests
     {
         return RideEntity.Create(
             driverId: Guid.NewGuid(),
+            driverFirstName: "John",
+            driverLastName: "Doe",
             originName: "Novi Sad",
             originLat: 45.2671,
             originLng: 19.8335,
@@ -42,7 +44,7 @@ public class RideEntityTests
     public void Create_PastDepartureTime_ThrowsDomainException()
     {
         var act = () => RideEntity.Create(
-            Guid.NewGuid(), "A", 0, 0, "B", 0, 0,
+            Guid.NewGuid(), "John", "Doe", "Belgrade", 0, 0, "Novi Sad", 0, 0,
             DateTime.UtcNow.AddHours(-1), 4, 500m, "RSD");
 
         act.Should().Throw<RideDomainException>()

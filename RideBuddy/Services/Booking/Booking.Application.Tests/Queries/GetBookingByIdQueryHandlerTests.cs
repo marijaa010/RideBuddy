@@ -22,6 +22,8 @@ public class GetBookingByIdQueryHandlerTests
         return BookingEntity.Create(
             rideId: Guid.NewGuid(),
             passengerId: Guid.NewGuid(),
+            passengerFirstName: "John",
+            passengerLastName: "Doe",
             seatsBooked: 2,
             pricePerSeat: 500m,
             currency: "RSD",

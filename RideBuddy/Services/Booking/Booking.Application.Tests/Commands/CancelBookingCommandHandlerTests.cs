@@ -42,6 +42,8 @@ public class CancelBookingCommandHandlerTests
         var booking = BookingEntity.Create(
             rideId: Guid.NewGuid(),
             passengerId: _passengerId,
+            passengerFirstName: "John",
+            passengerLastName: "Doe",
             seatsBooked: 2,
             pricePerSeat: 500m,
             currency: "RSD",

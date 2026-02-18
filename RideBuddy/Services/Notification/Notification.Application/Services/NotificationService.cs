@@ -35,20 +35,41 @@ public class NotificationService
     public async Task HandleBookingCreated(BookingEventDto evt, CancellationToken ct)
     {
         var passenger = await _userClient.GetUserInfo(evt.PassengerId, ct);
-        if (passenger is null) return;
+        var isAutoConfirmed = evt.IsAutoConfirmed;
+        if (passenger is not null)
+        {
+            var title = "Booking submitted";
+            var message = $"Your booking (#{evt.BookingId.ToString()[..8]}) for {evt.SeatsBooked} seat(s) " +
+                          $"has been submitted. Total: {evt.TotalPrice} {evt.Currency}. " +
+                          (isAutoConfirmed ? "The booking was auto-confirmed by the system. Have a safe trip!" :
+                          "Waiting for driver confirmation.");
 
-        var title = "Booking Received";
-        var message = $"Your booking (#{evt.BookingId.ToString()[..8]}) for {evt.SeatsBooked} seat(s) " +
-                      $"has been submitted. Total: {evt.TotalPrice} {evt.Currency}. " +
-                      "Waiting for driver confirmation.";
+            await SendAll(
+                passenger, title, message,
+                NotificationType.BookingCreated,
+                evt.BookingId, evt.RideId,
+                "RideBuddy| Booking Received",
+                BuildEmailBody(passenger.FirstName, title, message),
+                ct);
+        }
 
-        await SendAll(
-            passenger, title, message,
-            NotificationType.BookingCreated,
-            evt.BookingId, evt.RideId,
-            "Booking Received - RideBuddy",
-            BuildEmailBody(passenger.FirstName, title, message),
-            ct);
+        var driver = await _userClient.GetUserInfo(evt.DriverId, ct);
+        if (driver is not null && passenger is not null)
+        {
+            var driverTitle = "New booking request";
+            var driverMessage = $"Passenger {passenger.FullName} has requested to book " +
+                                $"{evt.SeatsBooked} seat(s) on your ride (#{evt.RideId.ToString()[..8]}). " +
+                                (isAutoConfirmed ? "The booking was auto-confirmed by the system." :
+                                "Please confirm or reject the booking.");
+
+            await SendAll(
+                driver, driverTitle, driverMessage,
+                NotificationType.BookingCreated,
+                evt.BookingId, evt.RideId,
+                "RideBuddy| New booking request",
+                BuildEmailBody(driver.FirstName, driverTitle, driverMessage),
+                ct);
+        }
     }
 
     public async Task HandleBookingConfirmed(BookingEventDto evt, CancellationToken ct)
@@ -65,7 +86,7 @@ public class NotificationService
             passenger, title, message,
             NotificationType.BookingConfirmed,
             evt.BookingId, evt.RideId,
-            "Booking Confirmed - RideBuddy",
+            "RideBuddy| Booking Confirmed",
             BuildEmailBody(passenger.FirstName, title, message),
             ct);
     }
@@ -88,7 +109,7 @@ public class NotificationService
             passenger, title, message,
             NotificationType.BookingRejected,
             evt.BookingId, evt.RideId,
-            "Booking Rejected - RideBuddy",
+            "RideBuddy| Booking Rejected",
             BuildEmailBody(passenger.FirstName, title, message),
             ct);
     }
@@ -110,7 +131,7 @@ public class NotificationService
             passenger, title, message,
             NotificationType.BookingCancelled,
             evt.BookingId, evt.RideId,
-            "Booking Cancelled - RideBuddy",
+            "RideBuddy| Booking Cancelled",
             BuildEmailBody(passenger.FirstName, title, message),
             ct);
     }
@@ -128,14 +149,10 @@ public class NotificationService
             passenger, title, message,
             NotificationType.BookingCompleted,
             evt.BookingId, evt.RideId,
-            "Ride Completed - RideBuddy",
+            "RideBuddy| Ride Completed",
             BuildEmailBody(passenger.FirstName, title, message),
             ct);
     }
-
-    // ------------------------------------------------------------------
-    // Helpers
-    // ------------------------------------------------------------------
 
     private async Task SendAll(
         UserInfoDto user,
@@ -145,7 +162,6 @@ public class NotificationService
         string emailSubject, string emailBody,
         CancellationToken ct)
     {
-        // 1. Save in-app notification
         var notification = NotificationEntity.Create(
             user.UserId, title, message, type, bookingId, rideId);
 
@@ -153,7 +169,6 @@ public class NotificationService
 
         var dto = MapToDto(notification);
 
-        // 2. Push real-time via SignalR
         try
         {
             await _realTimeNotifier.SendToUser(user.UserId, dto, ct);
@@ -164,7 +179,6 @@ public class NotificationService
             _logger.LogWarning(ex, "Failed to send SignalR notification to user {UserId}", user.UserId);
         }
 
-        // 3. Send email
         try
         {
             await _emailService.SendAsync(

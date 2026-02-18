@@ -1,14 +1,17 @@
 using Booking.Application.DTOs;
+using Booking.Application.Interfaces;
 using Booking.Application.Queries.GetBookingsByPassenger;
 using Booking.Domain.Entities;
 using Booking.Domain.Enums;
 using Booking.Domain.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Booking.Application.Tests.Queries;
 
 public class GetBookingsByPassengerQueryHandlerTests
 {
     private readonly Mock<IBookingRepository> _bookingRepo;
+    private readonly Mock<IRideGrpcClient> _rideClient;
     private readonly GetBookingsByPassengerQueryHandler _handler;
 
     private readonly Guid _passengerId = Guid.NewGuid();
@@ -16,7 +19,16 @@ public class GetBookingsByPassengerQueryHandlerTests
     public GetBookingsByPassengerQueryHandlerTests()
     {
         _bookingRepo = new Mock<IBookingRepository>();
-        _handler = new GetBookingsByPassengerQueryHandler(_bookingRepo.Object);
+        _rideClient = new Mock<IRideGrpcClient>();
+
+        _rideClient
+            .Setup(r => r.GetRideInfo(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RideInfoDto?)null);
+
+        _handler = new GetBookingsByPassengerQueryHandler(
+            _bookingRepo.Object,
+            _rideClient.Object,
+            Mock.Of<ILogger<GetBookingsByPassengerQueryHandler>>());
     }
 
     private BookingEntity CreateBooking(Guid? passengerId = null)
@@ -24,6 +36,8 @@ public class GetBookingsByPassengerQueryHandlerTests
         return BookingEntity.Create(
             rideId: Guid.NewGuid(),
             passengerId: passengerId ?? _passengerId,
+            passengerFirstName: "John",
+            passengerLastName: "Doe",
             seatsBooked: 1,
             pricePerSeat: 300m,
             currency: "RSD",
