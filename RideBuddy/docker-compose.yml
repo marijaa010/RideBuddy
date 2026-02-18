@@ -214,13 +214,13 @@ services:
       ASPNETCORE_URLS: "http://+:5004"
       ConnectionStrings__NotificationDb: "Host=notificationdb;Port=5432;Database=NotificationDb;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       GrpcServices__UserService: "http://user-service:50051"
-      SmtpSettings__Host: "sandbox.smtp.mailtrap.io"
-      SmtpSettings__Port: "587"
+      SmtpSettings__Host: ${SMTP_HOST}
+      SmtpSettings__Port: ${SMTP_PORT}
       SmtpSettings__Username: ${SMTP_USERNAME}
       SmtpSettings__Password: ${SMTP_PASSWORD}
-      SmtpSettings__FromEmail: "noreply@ridebuddy.com"
-      SmtpSettings__FromName: "RideBuddy"
-      SmtpSettings__UseSsl: "true"
+      SmtpSettings__FromEmail: ${SMTP_FROM_EMAIL}
+      SmtpSettings__FromName: ${SMTP_FROM_NAME}
+      SmtpSettings__UseSsl: ${SMTP_USE_SSL}
       <<: [*rabbitmq-env, *jwt-env]
     ports:
       - "5004:5004"
