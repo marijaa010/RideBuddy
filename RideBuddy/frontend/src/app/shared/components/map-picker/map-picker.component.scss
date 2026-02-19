@@ -140,3 +140,20 @@
     color: #3498db;
   }
 }
+
+// Draggable marker styles
+:host ::ng-deep {
+  .leaflet-marker-draggable {
+    cursor: move !important;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+
+  .leaflet-dragging .leaflet-marker-draggable {
+    cursor: grabbing !important;
+    opacity: 0.7;
+  }
+}

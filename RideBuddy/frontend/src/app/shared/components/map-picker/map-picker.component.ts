@@ -170,9 +170,15 @@ export class MapPickerComponent implements OnInit, OnDestroy {
       this.map.removeLayer(this.marker);
     }
 
-    // Add new marker
-    this.marker = L.marker([lat, lng]).addTo(this.map);
+    // Add new DRAGGABLE marker
+    this.marker = L.marker([lat, lng], { draggable: true }).addTo(this.map);
     this.marker.bindPopup(name).openPopup();
+
+    // Handle marker drag end
+    this.marker.on('dragend', (event: L.DragEndEvent) => {
+      const position = event.target.getLatLng();
+      this.onMarkerDragged(position.lat, position.lng);
+    });
 
     // Center map on location
     this.map.setView([lat, lng], 13);
@@ -182,6 +188,38 @@ export class MapPickerComponent implements OnInit, OnDestroy {
       name,
       latitude: lat,
       longitude: lng
+    });
+  }
+
+  private onMarkerDragged(lat: number, lng: number): void {
+    // Perform reverse geocoding to get location name
+    this.geocodingService.reverseGeocode(lat, lng).subscribe({
+      next: (result) => {
+        if (result) {
+          const name = this.geocodingService.getSimplifiedName(result);
+          this.searchQuery = name;
+          this.marker?.bindPopup(name).openPopup();
+
+          // Emit updated location
+          this.locationSelected.emit({
+            name,
+            latitude: lat,
+            longitude: lng
+          });
+        }
+      },
+      error: () => {
+        const name = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        this.searchQuery = name;
+        this.marker?.bindPopup(name).openPopup();
+
+        // Emit updated location
+        this.locationSelected.emit({
+          name,
+          latitude: lat,
+          longitude: lng
+        });
+      }
     });
   }
 

@@ -155,25 +155,6 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
     setTimeout(() => {
       this.map.invalidateSize();
     }, 100);
-
-    // Calculate and display distance
-    const distance = this.calculateDistance(
-      this.origin.latitude,
-      this.origin.longitude,
-      this.destination.latitude,
-      this.destination.longitude
-    );
-
-    // Add distance popup on the line
-    const midPoint: L.LatLngExpression = [
-      (this.origin.latitude + this.destination.latitude) / 2,
-      (this.origin.longitude + this.destination.longitude) / 2
-    ];
-
-    L.popup()
-      .setLatLng(midPoint)
-      .setContent(`<b>Distance:</b> ${distance.toFixed(1)} km`)
-      .openOn(this.map);
   }
 
   private clearRoute(): void {
@@ -186,28 +167,5 @@ export class RouteMapComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
     if (this.routeLine) {
       this.map.removeLayer(this.routeLine);
     }
-  }
-
-  /**
-   * Calculate distance between two points using Haversine formula
-   */
-  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const R = 6371; // Radius of Earth in kilometers
-    const dLat = this.toRad(lat2 - lat1);
-    const dLon = this.toRad(lon2 - lon1);
-
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.toRad(lat1)) *
-        Math.cos(this.toRad(lat2)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  }
-
-  private toRad(degrees: number): number {
-    return degrees * (Math.PI / 180);
   }
 }
