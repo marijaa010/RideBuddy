@@ -36,10 +36,11 @@ public class NotificationService
     {
         var passenger = await _userClient.GetUserInfo(evt.PassengerId, ct);
         var isAutoConfirmed = evt.IsAutoConfirmed;
+        var seatsBooked = $"{evt.SeatsBooked} seat" + (evt.SeatsReleased > 1 ? "s" : "");
         if (passenger is not null)
         {
             var title = "Booking submitted";
-            var message = $"Your booking (#{evt.BookingId.ToString()[..8]}) for {evt.SeatsBooked} seat(s) " +
+            var message = $"Your booking (#{evt.BookingId.ToString()[..8]}) for {seatsBooked} " +
                           $"has been submitted. Total: {evt.TotalPrice} {evt.Currency}. " +
                           (isAutoConfirmed ? "The booking was auto-confirmed by the system. Have a safe trip!" :
                           "Waiting for driver confirmation.");
@@ -48,7 +49,7 @@ public class NotificationService
                 passenger, title, message,
                 NotificationType.BookingCreated,
                 evt.BookingId, evt.RideId,
-                "RideBuddy| Booking Received",
+                "RideBuddy - Booking submitted",
                 BuildEmailBody(passenger.FirstName, title, message),
                 ct);
         }
@@ -58,7 +59,7 @@ public class NotificationService
         {
             var driverTitle = "New booking request";
             var driverMessage = $"Passenger {passenger.FullName} has requested to book " +
-                                $"{evt.SeatsBooked} seat(s) on your ride (#{evt.RideId.ToString()[..8]}). " +
+                                $"{seatsBooked} on your ride (#{evt.RideId.ToString()[..8]}). " +
                                 (isAutoConfirmed ? "The booking was auto-confirmed by the system." :
                                 "Please confirm or reject the booking.");
 
@@ -66,7 +67,7 @@ public class NotificationService
                 driver, driverTitle, driverMessage,
                 NotificationType.BookingCreated,
                 evt.BookingId, evt.RideId,
-                "RideBuddy| New booking request",
+                "RideBuddy - New booking request",
                 BuildEmailBody(driver.FirstName, driverTitle, driverMessage),
                 ct);
         }
@@ -76,17 +77,18 @@ public class NotificationService
     {
         var passenger = await _userClient.GetUserInfo(evt.PassengerId, ct);
         if (passenger is null) return;
+        var seatsBooked = $"{evt.SeatsBooked} seat" + (evt.SeatsReleased > 1 ? "s" : "");
 
-        var title = "Booking Confirmed!";
+        var title = "Booking confirmed!";
         var message = $"Great news! Your booking (#{evt.BookingId.ToString()[..8]}) " +
-                      $"for {evt.SeatsBooked} seat(s) has been confirmed by the driver. " +
+                      $"for {seatsBooked} has been confirmed by the driver. " +
                       $"Total: {evt.TotalPrice} RSD. Have a safe trip!";
 
         await SendAll(
             passenger, title, message,
             NotificationType.BookingConfirmed,
             evt.BookingId, evt.RideId,
-            "RideBuddy| Booking Confirmed",
+            "RideBuddy - Booking confirmed",
             BuildEmailBody(passenger.FirstName, title, message),
             ct);
     }
@@ -100,7 +102,7 @@ public class NotificationService
             ? "No reason provided"
             : evt.RejectionReason;
 
-        var title = "Booking Rejected";
+        var title = "Booking rejected";
         var message = $"Unfortunately, your booking (#{evt.BookingId.ToString()[..8]}) " +
                       $"was rejected by the driver. Reason: {reason}. " +
                       "The reserved seats have been released. Please try another ride.";
@@ -109,7 +111,7 @@ public class NotificationService
             passenger, title, message,
             NotificationType.BookingRejected,
             evt.BookingId, evt.RideId,
-            "RideBuddy| Booking Rejected",
+            "RideBuddy - Booking rejected",
             BuildEmailBody(passenger.FirstName, title, message),
             ct);
     }
@@ -122,16 +124,17 @@ public class NotificationService
         var reason = string.IsNullOrWhiteSpace(evt.CancellationReason)
             ? "No reason provided"
             : evt.CancellationReason;
+        var seatsReleased = $"{evt.SeatsReleased} seat" + (evt.SeatsReleased > 1? "s" : "");
 
-        var title = "Booking Cancelled";
+        var title = "Booking cancelled";
         var message = $"Your booking (#{evt.BookingId.ToString()[..8]}) has been cancelled. " +
-                      $"Reason: {reason}. {evt.SeatsReleased} seat(s) have been released.";
+                      $"Reason: {reason}. {seatsReleased} have been released.";
 
         await SendAll(
             passenger, title, message,
             NotificationType.BookingCancelled,
             evt.BookingId, evt.RideId,
-            "RideBuddy| Booking Cancelled",
+            "RideBuddy - Booking cancelled",
             BuildEmailBody(passenger.FirstName, title, message),
             ct);
     }
@@ -149,7 +152,7 @@ public class NotificationService
             passenger, title, message,
             NotificationType.BookingCompleted,
             evt.BookingId, evt.RideId,
-            "RideBuddy| Ride Completed",
+            "RideBuddy - Ride Completed",
             BuildEmailBody(passenger.FirstName, title, message),
             ct);
     }

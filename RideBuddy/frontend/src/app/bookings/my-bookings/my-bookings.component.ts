@@ -66,7 +66,8 @@ export class MyBookingsComponent implements OnInit {
       0: 'Pending',
       1: 'Confirmed',
       2: 'Cancelled',
-      3: 'Completed'
+      3: 'Completed',
+      4: 'Rejected'
     };
     return statuses[status] || 'Unknown';
   }
@@ -76,7 +77,8 @@ export class MyBookingsComponent implements OnInit {
       0: 'pending',
       1: 'confirmed',
       2: 'cancelled',
-      3: 'completed'
+      3: 'completed',
+      4: 'rejected'
     };
     return classes[status] || '';
   }

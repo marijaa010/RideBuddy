@@ -38,14 +38,10 @@ export class DateFormatterService {
       }
     }
 
-    // Future dates
-    if (diffMins < 60) {
-      return `In ${diffMins} minute${diffMins !== 1 ? 's' : ''}`;
-    } else if (diffHours < 24) {
-      return `In ${diffHours} hour${diffHours !== 1 ? 's' : ''} (${timeStr})`;
-    } else if (diffDays === 0) {
+    // Future dates - check calendar day first
+    if (this.isToday(dateStr)) {
       return `Today at ${timeStr}`;
-    } else if (diffDays === 1) {
+    } else if (this.isTomorrow(dateStr)) {
       return `Tomorrow at ${timeStr}`;
     } else if (diffDays < 7) {
       const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
@@ -60,10 +56,12 @@ export class DateFormatterService {
    * Example: "Jan 15, 2026"
    */
   formatFullDate(dateStr: string): string {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    const date = new Date(dateStr);
+    const isCurrentYear = date.getFullYear() === new Date().getFullYear();
+    return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      ...(isCurrentYear ? {} : { year: 'numeric' })
     });
   }
 

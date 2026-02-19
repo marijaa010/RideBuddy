@@ -65,7 +65,7 @@ export class RideDetailsComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.isBooking = false;
-        this.toastService.success('Booking confirmed! Redirecting to your bookings...');
+        this.toastService.success('Booking submitted! Redirecting to your bookings...');
         setTimeout(() => {
           this.router.navigate(['/bookings']);
         }, 2000);
@@ -79,7 +79,7 @@ export class RideDetailsComponent implements OnInit {
   }
 
   formatDate(dateStr: string): string {
-    return this.dateFormatter.formatFullDateTime(dateStr);
+    return this.dateFormatter.formatRelativeDate(dateStr);
   }
 
   getCountdown(dateStr: string): string {
