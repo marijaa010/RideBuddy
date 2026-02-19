@@ -71,7 +71,7 @@
     }
 
     &.confirmed {
-      background: linear-gradient(135deg, #81ecec 0%, #00b894 100%);
+      background: linear-gradient(135deg, #89eb87 0%, #0aa016 100%);
       color: #00695c;
     }
 
@@ -86,8 +86,8 @@
     }
 
     &.rejected {
-      background: linear-gradient(135deg, #ff7675 0%, #d63031 100%);
-      color: white;
+      background: linear-gradient(135deg, #d05757 0%, #7e1b1b 100%);
+      color: rgb(36, 4, 4);
     }
   }
 }

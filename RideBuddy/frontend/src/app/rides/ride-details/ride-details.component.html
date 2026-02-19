@@ -8,7 +8,7 @@
   <div *ngIf="!isLoading && ride" class="ride-details-container">
     <div class="ride-header">
       <h1>Ride Details</h1>
-      <button class="btn" (click)="router.navigate(['/rides'])">← Back to List</button>
+      <button class="btn" (click)="router.navigate(['/rides'])">← Back to list</button>
     </div>
 
     <div class="details-card">
@@ -36,7 +36,7 @@
         <div class="info-item">
           <i class="fa-regular fa-clock icon"></i>
           <div>
-            <div class="label">Departure Time</div>
+            <div class="label">Departure time</div>
             <div class="value">{{ formatDate(ride.departureTime) }}</div>
             <div class="countdown-badge" *ngIf="!dateFormatter.isPast(ride.departureTime)">
               <i class="fa-solid fa-hourglass-half"></i> Departs in {{ getCountdown(ride.departureTime) }}
@@ -47,7 +47,7 @@
         <div class="info-item">
           <i class="fa-solid fa-chair icon"></i>
           <div>
-            <div class="label">Available Seats</div>
+            <div class="label">Available seats</div>
             <div class="value">{{ ride.availableSeats }} / {{ ride.totalSeats }}</div>
           </div>
         </div>
@@ -55,7 +55,7 @@
         <div class="info-item">
           <i class="fa-solid fa-coins icon"></i>
           <div>
-            <div class="label">Price per Seat</div>
+            <div class="label">Price per seat</div>
             <div class="value price">{{ ride.pricePerSeat }} {{ ride.currency }}</div>
           </div>
         </div>
@@ -63,8 +63,8 @@
         <div class="info-item">
           <i class="fa-solid fa-circle-check icon"></i>
           <div>
-            <div class="label">Booking Type</div>
-            <div class="value">{{ ride.autoConfirmBookings ? 'Instant Booking' : 'Requires Approval' }}</div>
+            <div class="label">Booking type</div>
+            <div class="value">{{ ride.autoConfirmBookings ? 'Instant booking' : "Requires driver's approval" }}</div>
           </div>
         </div>
       </div>
@@ -73,7 +73,7 @@
         <h3>Book This Ride</h3>
         <div class="booking-form">
           <div class="form-group">
-            <label for="seats">Number of Seats</label>
+            <label for="seats">Number of seats</label>
             <input 
               type="number" 
               id="seats" 
@@ -97,7 +97,7 @@
             (click)="bookRide()"
             [disabled]="isBooking || seatsToBook < 1 || seatsToBook > ride.availableSeats"
           >
-            {{ isBooking ? 'Booking...' : 'Confirm Booking' }}
+            {{ isBooking ? 'Booking...' : 'Submit booking' }}
           </button>
           <p class="booking-note" *ngIf="!authService.isAuthenticated()">
             Please <a routerLink="/identity/login">login</a> to book this ride

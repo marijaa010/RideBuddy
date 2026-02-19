@@ -228,10 +228,10 @@
         background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
         color: #d63031;
       }
-      &.confirmed { 
-        background: linear-gradient(135deg, #81ecec 0%, #00b894 100%);
-        color: #00695c;
-      }
+      &.confirmed {
+      background: linear-gradient(135deg, #89eb87 0%, #0aa016 100%);
+      color: #00695c;
+    }
       &.cancelled { 
         background: linear-gradient(135deg, #fab1a0 0%, #e17055 100%);
         color: #7f0000;
@@ -240,9 +240,9 @@
         background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
         color: #004085;
       }
-      &.rejected { 
-        background: linear-gradient(135deg, #ff7675 0%, #d63031 100%);
-        color: white;
+      &.rejected {
+      background: linear-gradient(135deg, #d05757 0%, #7e1b1b 100%);
+      color: rgb(36, 4, 4);
       }
     }
   }
