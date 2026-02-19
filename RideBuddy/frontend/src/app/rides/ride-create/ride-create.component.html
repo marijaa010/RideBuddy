@@ -7,16 +7,18 @@
   <div class="create-card">
     <form [formGroup]="rideForm" (ngSubmit)="onSubmit()">
       <h3>Origin</h3>
-      <div class="form-group">
-        <label for="originName">City/Location *</label>
-        <input type="text" id="originName" formControlName="originName" placeholder="e.g., Belgrade, Novi Sad, Niš" />
-      </div>
+      <app-map-picker
+        label="Pick-up Location *"
+        placeholder="Search for origin (e.g., Belgrade, Novi Sad, Niš)"
+        (locationSelected)="onOriginSelected($event)"
+      ></app-map-picker>
 
       <h3>Destination</h3>
-      <div class="form-group">
-        <label for="destinationName">City/Location *</label>
-        <input type="text" id="destinationName" formControlName="destinationName" placeholder="e.g., Belgrade, Novi Sad, Niš" />
-      </div>
+      <app-map-picker
+        label="Drop-off Location *"
+        placeholder="Search for destination (e.g., Belgrade, Novi Sad, Niš)"
+        (locationSelected)="onDestinationSelected($event)"
+      ></app-map-picker>
 
       <h3>Ride Details</h3>
       <div class="form-grid">
@@ -51,7 +53,7 @@
 
       <div class="form-actions">
         <button type="button" class="btn" (click)="router.navigate(['/rides'])">Cancel</button>
-        <button type="submit" class="btn btn-primary" [disabled]="rideForm.invalid || isLoading">
+        <button type="submit" class="btn btn-primary" [disabled]="!isFormValid || isLoading">
           {{ isLoading ? 'Creating...' : 'Create Ride' }}
         </button>
       </div>
