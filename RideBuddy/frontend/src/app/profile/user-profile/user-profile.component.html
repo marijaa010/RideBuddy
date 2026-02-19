@@ -1,0 +1,99 @@
+<div class="container">
+  <app-loading-spinner
+    *ngIf="isLoading"
+    message="Loading profile..."
+    size="medium">
+  </app-loading-spinner>
+
+  <div *ngIf="!isLoading && profile" class="profile-container fade-in">
+    <div class="profile-header">
+      <div class="avatar">{{ getInitials() }}</div>
+      <div class="header-info">
+        <h1 *ngIf="!isEditing">{{ profile.firstName }} {{ profile.lastName }}</h1>
+        <div *ngIf="isEditing" class="edit-name">
+          <input type="text" [(ngModel)]="editForm.firstName" placeholder="First name" />
+          <input type="text" [(ngModel)]="editForm.lastName" placeholder="Last name" />
+        </div>
+        <span class="role-badge" [class.driver]="profile.role === 'Driver'">{{ profile.role }}</span>
+      </div>
+      <div class="header-actions">
+        <button *ngIf="!isEditing" class="btn btn-primary btn-sm" (click)="startEditing()">
+          <i class="fa-solid fa-pen"></i> Edit Profile
+        </button>
+        <ng-container *ngIf="isEditing">
+          <button class="btn btn-success btn-sm" (click)="saveProfile()" [disabled]="isSaving">
+            {{ isSaving ? 'Saving...' : 'Save' }}
+          </button>
+          <button class="btn btn-sm btn-cancel" (click)="cancelEditing()" [disabled]="isSaving">Cancel</button>
+        </ng-container>
+      </div>
+    </div>
+
+    <div class="profile-body">
+      <div class="info-card">
+        <h2>Personal Information</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <i class="fa-solid fa-envelope"></i>
+            <div>
+              <div class="label">Email</div>
+              <div class="value">{{ profile.email }}</div>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <i class="fa-solid fa-phone"></i>
+            <div>
+              <div class="label">Phone number</div>
+              <div *ngIf="!isEditing" class="value">{{ profile.phoneNumber || 'Not provided' }}</div>
+              <input *ngIf="isEditing" type="text" [(ngModel)]="editForm.phoneNumber" placeholder="Phone number" />
+            </div>
+          </div>
+
+          <div class="info-item">
+            <i class="fa-solid fa-user-tag"></i>
+            <div>
+              <div class="label">Role</div>
+              <div class="value">{{ profile.role }}</div>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <i class="fa-solid fa-calendar"></i>
+            <div>
+              <div class="label">Member since</div>
+              <div class="value">{{ formatMemberSince() }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-card">
+        <h2>Activity</h2>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value">{{ stats.totalBookings }}</div>
+            <div class="stat-label">Total Bookings</div>
+          </div>
+
+          <div class="stat-item">
+            <div class="stat-value completed">{{ stats.completedBookings }}</div>
+            <div class="stat-label">Completed Trips</div>
+          </div>
+
+          <ng-container *ngIf="authService.isDriver()">
+            <div class="stat-item">
+              <div class="stat-value">{{ stats.totalRides }}</div>
+              <div class="stat-label">Rides Offered</div>
+            </div>
+
+            <div class="stat-item">
+              <div class="stat-value completed">{{ stats.completedRides }}</div>
+              <div class="stat-label">Rides Completed</div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

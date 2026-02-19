@@ -16,7 +16,9 @@
         <a routerLink="/bookings" routerLinkActive="active" class="nav-link">My Bookings</a>
         
         <div class="user-menu">
-          <span class="user-name">{{ user.firstName }} {{ user.lastName }}</span>
+          <a routerLink="/profile" routerLinkActive="active" class="nav-link user-link">
+            <i class="fa-solid fa-user"></i> {{ user.firstName }} {{ user.lastName }}
+          </a>
           <span class="user-role" [class.driver]="user.role === 'Driver'">{{ user.role }}</span>
           <button (click)="logout()" class="btn btn-sm btn-logout">Logout</button>
         </div>
