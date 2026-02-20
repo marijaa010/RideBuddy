@@ -152,7 +152,9 @@ public class BookingEntity : AggregateRoot
     /// Cancels the booking.
     /// </summary>
     /// <param name="reason">Reason for cancellation</param>
-    public void Cancel(string reason)
+    /// <param name="cancelledByPassenger">True if the passenger initiated the cancellation</param>
+    /// <param name="departureTime">Departure time of the ride, used for late-cancellation notifications</param>
+    public void Cancel(string reason, bool cancelledByPassenger, DateTime departureTime)
     {
         if (Status == BookingStatus.Cancelled)
             throw new BookingDomainException("Booking is already cancelled.");
@@ -172,7 +174,9 @@ public class BookingEntity : AggregateRoot
             DriverId,
             SeatsBooked.Value,
             reason,
-            CancelledAt.Value));
+            CancelledAt.Value,
+            cancelledByPassenger,
+            departureTime));
     }
 
     /// <summary>

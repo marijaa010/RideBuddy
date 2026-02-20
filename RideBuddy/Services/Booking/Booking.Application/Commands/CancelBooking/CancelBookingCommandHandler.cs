@@ -59,16 +59,21 @@ public class CancelBookingCommandHandler : IRequestHandler<CancelBookingCommand,
             return Result.Failure($"Booking in '{booking.Status}' status cannot be cancelled.");
         }
 
-        var reason = string.IsNullOrWhiteSpace(request.Reason) 
-            ? "Cancelled by " + (booking.PassengerId.Value == request.UserId ? "passenger" : "driver")
+        var cancelledByPassenger = booking.PassengerId.Value == request.UserId;
+
+        var reason = string.IsNullOrWhiteSpace(request.Reason)
+            ? "Cancelled by " + (cancelledByPassenger ? "passenger" : "driver")
             : request.Reason;
+
+        var rideInfo = await _rideClient.GetRideInfo(booking.RideId.Value, cancellationToken);
+        var departureTime = rideInfo?.DepartureTime ?? DateTime.MinValue;
 
         await _unitOfWork.BeginTransaction(cancellationToken);
 
         try
         {
             // Cancel the booking
-            booking.Cancel(reason);
+            booking.Cancel(reason, cancelledByPassenger, departureTime);
             await _unitOfWork.Bookings.Update(booking, cancellationToken);
             await _unitOfWork.SaveChanges(cancellationToken);
 

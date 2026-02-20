@@ -93,7 +93,7 @@ public class GetBookingByIdQueryHandlerTests
     public async Task Handle_CancelledBooking_MapsCancellationReason()
     {
         var booking = CreateBooking();
-        booking.Cancel("No longer needed");
+        booking.Cancel("No longer needed", false, DateTime.MinValue);
 
         _bookingRepo
             .Setup(r => r.GetById(booking.Id, It.IsAny<CancellationToken>()))

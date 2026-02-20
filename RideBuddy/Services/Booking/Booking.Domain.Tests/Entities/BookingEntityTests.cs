@@ -132,7 +132,7 @@ public class BookingEntityTests
         var booking = CreateBooking();
         const string reason = "Changed my mind";
 
-        booking.Cancel(reason);
+        booking.Cancel(reason, false, DateTime.MinValue);
 
         booking.Status.Should().Be(BookingStatus.Cancelled);
         booking.CancelledAt.Should().NotBeNull();
@@ -146,7 +146,7 @@ public class BookingEntityTests
         booking.Confirm();
         const string reason = "Emergency";
 
-        booking.Cancel(reason);
+        booking.Cancel(reason, false, DateTime.MinValue);
 
         booking.Status.Should().Be(BookingStatus.Cancelled);
         booking.CancellationReason.Should().Be(reason);
@@ -158,7 +158,7 @@ public class BookingEntityTests
         var booking = CreateBooking();
         var versionBefore = booking.Version;
 
-        booking.Cancel("Reason");
+        booking.Cancel("Reason", false, DateTime.MinValue);
 
         booking.Version.Should().Be(versionBefore + 1);
     }
@@ -170,7 +170,7 @@ public class BookingEntityTests
         booking.ClearDomainEvents();
         const string reason = "No longer needed";
 
-        booking.Cancel(reason);
+        booking.Cancel(reason, false, DateTime.MinValue);
 
         booking.DomainEvents.Should().ContainSingle()
             .Which.Should().BeOfType<BookingCancelledEvent>();
@@ -185,9 +185,9 @@ public class BookingEntityTests
     public void Cancel_WhenAlreadyCancelled_ThrowsException()
     {
         var booking = CreateBooking();
-        booking.Cancel("First cancellation");
+        booking.Cancel("First cancellation", false, DateTime.MinValue);
 
-        var act = () => booking.Cancel("Second cancellation");
+        var act = () => booking.Cancel("Second cancellation", false, DateTime.MinValue);
 
         act.Should().Throw<BookingDomainException>()
             .WithMessage("Booking is already cancelled.");
@@ -200,7 +200,7 @@ public class BookingEntityTests
         booking.Confirm();
         booking.Complete();
 
-        var act = () => booking.Cancel("Too late");
+        var act = () => booking.Cancel("Too late", false, DateTime.MinValue);
 
         act.Should().Throw<BookingDomainException>()
             .WithMessage("Cannot cancel a completed ride.");
@@ -348,7 +348,7 @@ public class BookingEntityTests
     public void CanBeCancelled_WhenCancelled_ReturnsFalse()
     {
         var booking = CreateBooking();
-        booking.Cancel("Reason");
+        booking.Cancel("Reason", false, DateTime.MinValue);
 
         booking.CanBeCancelled().Should().BeFalse();
     }
@@ -405,7 +405,7 @@ public class BookingEntityTests
         var booking = CreateBooking();
 
         booking.Confirm();
-        booking.Cancel("Driver cancelled");
+        booking.Cancel("Driver cancelled", false, DateTime.MinValue);
 
         booking.Status.Should().Be(BookingStatus.Cancelled);
         booking.Version.Should().Be(2);
@@ -442,7 +442,7 @@ public class BookingEntityTests
                 booking.Confirm();
                 break;
             case BookingStatus.Cancelled:
-                booking.Cancel("Test cancellation");
+                booking.Cancel("Test cancellation", false, DateTime.MinValue);
                 break;
             case BookingStatus.Completed:
                 booking.Confirm();

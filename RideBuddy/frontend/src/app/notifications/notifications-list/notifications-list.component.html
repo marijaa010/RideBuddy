@@ -1,0 +1,52 @@
+<div class="container">
+  <div class="page-header">
+    <div class="header-left">
+      <h1>Notifications</h1>
+      <p>All your activity updates in one place</p>
+    </div>
+    <button
+      *ngIf="unreadCount > 0"
+      class="btn btn-primary btn-sm"
+      (click)="markAllRead()">
+      Mark all as read ({{ unreadCount }})
+    </button>
+  </div>
+
+  <app-loading-spinner
+    *ngIf="isLoading"
+    message="Loading notifications..."
+    size="medium">
+  </app-loading-spinner>
+
+  <div class="notifications-list" *ngIf="!isLoading && notifications.length > 0">
+    <div
+      *ngFor="let n of notifications"
+      [id]="'notification-' + n.id"
+      class="notification-card"
+      [class.unread]="!n.isRead"
+      [class.highlight]="n.id === highlightId"
+      (click)="markAsRead(n)">
+
+      <div class="notif-icon" [ngClass]="getTypeClass(n.type)">
+        <i class="fa-solid" [ngClass]="getTypeIcon(n.type)"></i>
+      </div>
+
+      <div class="notif-body">
+        <div class="notif-top">
+          <span class="notif-title">{{ n.title }}</span>
+          <span class="type-badge" [ngClass]="getTypeClass(n.type)">{{ getTypeLabel(n.type) }}</span>
+        </div>
+        <p class="notif-message">{{ n.message }}</p>
+        <span class="notif-date">{{ formatDate(n.createdAt) }}</span>
+      </div>
+
+      <div class="unread-dot" *ngIf="!n.isRead"></div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && notifications.length === 0">
+    <div class="empty-icon"><i class="fa-regular fa-bell-slash"></i></div>
+    <h3>No notifications yet</h3>
+    <p>You'll see booking updates and other activity here.</p>
+  </div>
+</div>

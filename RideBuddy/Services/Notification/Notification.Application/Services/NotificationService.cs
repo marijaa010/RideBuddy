@@ -36,7 +36,7 @@ public class NotificationService
     {
         var passenger = await _userClient.GetUserInfo(evt.PassengerId, ct);
         var isAutoConfirmed = evt.IsAutoConfirmed;
-        var seatsBooked = $"{evt.SeatsBooked} seat" + (evt.SeatsReleased > 1 ? "s" : "");
+        var seatsBooked = $"{evt.SeatsBooked} seat" + (evt.SeatsBooked > 1 ? "s" : "");
         if (passenger is not null)
         {
             var title = "Booking submitted";
@@ -118,25 +118,89 @@ public class NotificationService
 
     public async Task HandleBookingCancelled(BookingEventDto evt, CancellationToken ct)
     {
-        var passenger = await _userClient.GetUserInfo(evt.PassengerId, ct);
-        if (passenger is null) return;
-
         var reason = string.IsNullOrWhiteSpace(evt.CancellationReason)
             ? "No reason provided"
             : evt.CancellationReason;
-        var seatsReleased = $"{evt.SeatsReleased} seat" + (evt.SeatsReleased > 1? "s" : "");
+        var seatsReleased = $"{evt.SeatsReleased} seat" + (evt.SeatsReleased > 1 ? "s have" : " has");
 
-        var title = "Booking cancelled";
-        var message = $"Your booking (#{evt.BookingId.ToString()[..8]}) has been cancelled. " +
-                      $"Reason: {reason}. {seatsReleased} have been released.";
+        var isLateCancellation = evt.DepartureTime > DateTime.MinValue &&
+                                 (evt.DepartureTime - evt.CancelledAt).TotalHours < 1;
+        var lateWarning = isLateCancellation
+            ? " Please note: this cancellation was made less than 1 hour before departure. " +
+              "We kindly ask you to avoid late cancellations in the future."
+            : string.Empty;
 
-        await SendAll(
-            passenger, title, message,
-            NotificationType.BookingCancelled,
-            evt.BookingId, evt.RideId,
-            "RideBuddy - Booking cancelled",
-            BuildEmailBody(passenger.FirstName, title, message),
-            ct);
+        if (evt.CancelledByPassenger)
+        {
+            // Passenger cancelled: passenger gets email only, driver gets email + push
+            var passenger = await _userClient.GetUserInfo(evt.PassengerId, ct);
+            if (passenger is not null)
+            {
+                var title = "Booking cancelled";
+                var message = $"Your booking (#{evt.BookingId.ToString()[..8]}) has been cancelled. " +
+                              $"Reason: {reason}. {seatsReleased} been released.{lateWarning}";
+
+                await SendEmailOnly(
+                    passenger,
+                    "RideBuddy - Booking cancelled",
+                    BuildEmailBody(passenger.FirstName, title, message),
+                    ct);
+            }
+
+            var driver = await _userClient.GetUserInfo(evt.DriverId, ct);
+            if (driver is not null)
+            {
+                var passengerName = passenger?.FullName ?? "A passenger";
+                var driverTitle = "Booking cancelled by passenger";
+                var driverMessage = $"{passengerName} has cancelled their booking " +
+                                    $"(#{evt.BookingId.ToString()[..8]}) on your ride " +
+                                    $"(#{evt.RideId.ToString()[..8]}). " +
+                                    $"Reason: {reason}. {seatsReleased} been released back to the ride.";
+
+                await SendAll(
+                    driver, driverTitle, driverMessage,
+                    NotificationType.BookingCancelled,
+                    evt.BookingId, evt.RideId,
+                    "RideBuddy - Booking cancelled by passenger",
+                    BuildEmailBody(driver.FirstName, driverTitle, driverMessage),
+                    ct);
+            }
+        }
+        else
+        {
+            // Driver cancelled: driver gets email only, passenger gets email + push
+            var driver = await _userClient.GetUserInfo(evt.DriverId, ct);
+            if (driver is not null)
+            {
+                var driverTitle = "You cancelled a booking";
+                var driverMessage = $"You have cancelled the booking (#{evt.BookingId.ToString()[..8]}). " +
+                                    $"Reason: {reason}. {seatsReleased} have been released.{lateWarning}";
+
+                await SendEmailOnly(
+                    driver,
+                    "RideBuddy - Booking cancelled",
+                    BuildEmailBody(driver.FirstName, driverTitle, driverMessage),
+                    ct);
+            }
+
+            var passenger = await _userClient.GetUserInfo(evt.PassengerId, ct);
+            if (passenger is not null)
+            {
+                var passengerTitle = "Your booking was cancelled by the driver";
+                var passengerMessage = $"Unfortunately, your booking (#{evt.BookingId.ToString()[..8]}) " +
+                                       $"has been cancelled by the driver. " +
+                                       $"Reason: {reason}. {seatsReleased} have been released. " +
+                                       "Please look for another ride.";
+
+                await SendAll(
+                    passenger, passengerTitle, passengerMessage,
+                    NotificationType.BookingCancelled,
+                    evt.BookingId, evt.RideId,
+                    "RideBuddy - Your booking was cancelled by the driver",
+                    BuildEmailBody(passenger.FirstName, passengerTitle, passengerMessage),
+                    ct);
+            }
+        }
     }
 
     public async Task HandleBookingCompleted(BookingEventDto evt, CancellationToken ct)
@@ -192,6 +256,24 @@ public class NotificationService
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to send email to {Email} for {Type}", user.Email, type);
+        }
+    }
+
+    private async Task SendEmailOnly(
+        UserInfoDto user,
+        string emailSubject, string emailBody,
+        CancellationToken ct)
+    {
+        try
+        {
+            await _emailService.SendAsync(
+                user.Email, user.FullName,
+                emailSubject, emailBody, ct);
+            _logger.LogInformation("Email sent to {Email}", user.Email);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to send email to {Email}", user.Email);
         }
     }
 

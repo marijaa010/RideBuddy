@@ -15,6 +15,44 @@
         <a *ngIf="authService.isDriver()" routerLink="/rides/my-rides" routerLinkActive="active" class="nav-link">My Rides</a>
         <a routerLink="/bookings" routerLinkActive="active" class="nav-link">My Bookings</a>
         
+        <div class="notification-bell" (click)="toggleNotifications(); $event.stopPropagation()">
+          <button class="bell-btn">
+            <i class="fa-solid fa-bell"></i>
+            <span *ngIf="unreadCount > 0" class="badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+          </button>
+
+          <div class="notification-dropdown" *ngIf="showDropdown" (click)="$event.stopPropagation()">
+            <div class="dropdown-header">
+              <span>Notifications</span>
+              <button *ngIf="unreadCount > 0" class="mark-all-btn" (click)="markAllRead()">Mark all read</button>
+            </div>
+            <div class="dropdown-body">
+              <div *ngIf="notifications.length === 0" class="empty-state">
+                No notifications yet
+              </div>
+              <div
+                *ngFor="let n of notifications"
+                class="notification-item"
+                [class.unread]="!n.isRead"
+                (click)="onNotificationClick(n)">
+                <div class="notif-icon">
+                  <i class="fa-solid fa-circle-info"></i>
+                </div>
+                <div class="notif-content">
+                  <div class="notif-title">{{ n.title }}</div>
+                  <div class="notif-message">{{ n.message }}</div>
+                  <div class="notif-time">{{ getTimeAgo(n.createdAt) }}</div>
+                </div>
+              </div>
+            </div>
+            <div class="dropdown-footer">
+              <a routerLink="/notifications" (click)="showDropdown = false" class="view-all-link">
+                View all notifications
+              </a>
+            </div>
+          </div>
+        </div>
+
         <div class="user-menu">
           <a routerLink="/profile" routerLinkActive="active" class="nav-link user-link">
             <i class="fa-solid fa-user"></i> {{ user.firstName }} {{ user.lastName }}

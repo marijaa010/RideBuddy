@@ -44,4 +44,6 @@ public record BookingEventDto
     public DateTime RejectedAt { get; init; }
     public DateTime CompletedAt { get; init; }
     public bool IsAutoConfirmed { get; init; }
+    public bool CancelledByPassenger { get; init; }
+    public DateTime DepartureTime { get; init; }
 }
