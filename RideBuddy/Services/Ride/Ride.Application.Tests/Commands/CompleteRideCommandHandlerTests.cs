@@ -42,11 +42,11 @@ public class CompleteRideCommandHandlerTests
         var rideId = Guid.NewGuid();
 
         var ride = RideEntity.Create(
-            driverId,
+            driverId, "John", "Doe",
             "Belgrade", 44.7866, 20.4489,
             "Novi Sad", 45.2671, 19.8335,
             DateTime.UtcNow.AddHours(2),
-            3, 500, "RSD", true);
+            3, 500m, "RSD", true);
 
         ride.Start(); // Move to InProgress state
 
@@ -103,11 +103,11 @@ public class CompleteRideCommandHandlerTests
         var rideId = Guid.NewGuid();
 
         var ride = RideEntity.Create(
-            driverId,
+            driverId, "John", "Doe",
             "Belgrade", 44.7866, 20.4489,
             "Novi Sad", 45.2671, 19.8335,
             DateTime.UtcNow.AddHours(2),
-            3, 500, "RSD", true);
+            3, 500m, "RSD", true);
 
         ride.Start();
 
@@ -137,11 +137,11 @@ public class CompleteRideCommandHandlerTests
         var rideId = Guid.NewGuid();
 
         var ride = RideEntity.Create(
-            driverId,
+            driverId, "John", "Doe",
             "Belgrade", 44.7866, 20.4489,
             "Novi Sad", 45.2671, 19.8335,
             DateTime.UtcNow.AddHours(2),
-            3, 500, "RSD", true);
+            3, 500m, "RSD", true);
 
         ride.Start();
 
@@ -168,11 +168,11 @@ public class CompleteRideCommandHandlerTests
         var rideId = Guid.NewGuid();
 
         var ride = RideEntity.Create(
-            driverId,
+            driverId, "John", "Doe",
             "Belgrade", 44.7866, 20.4489,
             "Novi Sad", 45.2671, 19.8335,
             DateTime.UtcNow.AddHours(2),
-            3, 500, "RSD", true);
+            3, 500m, "RSD", true);
 
         ride.Start();
 

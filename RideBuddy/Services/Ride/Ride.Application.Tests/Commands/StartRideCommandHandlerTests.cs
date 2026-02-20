@@ -42,11 +42,11 @@ public class StartRideCommandHandlerTests
         var rideId = Guid.NewGuid();
 
         var ride = RideEntity.Create(
-            driverId,
+            driverId, "John", "Doe",
             "Belgrade", 44.7866, 20.4489,
             "Novi Sad", 45.2671, 19.8335,
             DateTime.UtcNow.AddHours(2),
-            3, 500, "RSD", true);
+            3, 500m, "RSD", true);
 
         _rideRepositoryMock
             .Setup(x => x.GetById(rideId, It.IsAny<CancellationToken>()))
@@ -101,11 +101,11 @@ public class StartRideCommandHandlerTests
         var rideId = Guid.NewGuid();
 
         var ride = RideEntity.Create(
-            driverId,
+            driverId, "John", "Doe",
             "Belgrade", 44.7866, 20.4489,
             "Novi Sad", 45.2671, 19.8335,
             DateTime.UtcNow.AddHours(2),
-            3, 500, "RSD", true);
+            3, 500m, "RSD", true);
 
         _rideRepositoryMock
             .Setup(x => x.GetById(rideId, It.IsAny<CancellationToken>()))
@@ -133,11 +133,11 @@ public class StartRideCommandHandlerTests
         var rideId = Guid.NewGuid();
 
         var ride = RideEntity.Create(
-            driverId,
+            driverId, "John", "Doe",
             "Belgrade", 44.7866, 20.4489,
             "Novi Sad", 45.2671, 19.8335,
             DateTime.UtcNow.AddHours(2),
-            3, 500, "RSD", true);
+            3, 500m, "RSD", true);
 
         _rideRepositoryMock
             .Setup(x => x.GetById(rideId, It.IsAny<CancellationToken>()))
@@ -162,11 +162,11 @@ public class StartRideCommandHandlerTests
         var rideId = Guid.NewGuid();
 
         var ride = RideEntity.Create(
-            driverId,
+            driverId, "John", "Doe",
             "Belgrade", 44.7866, 20.4489,
             "Novi Sad", 45.2671, 19.8335,
             DateTime.UtcNow.AddHours(2),
-            3, 500, "RSD", true);
+            3, 500m, "RSD", true);
 
         _rideRepositoryMock
             .Setup(x => x.GetById(rideId, It.IsAny<CancellationToken>()))
