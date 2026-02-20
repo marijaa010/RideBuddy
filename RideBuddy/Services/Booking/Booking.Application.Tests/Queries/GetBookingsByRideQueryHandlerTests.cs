@@ -77,7 +77,7 @@ public class GetBookingsByRideQueryHandlerTests
         confirmed.Confirm();
 
         var cancelled = CreateBookingForRide();
-        cancelled.Cancel("test");
+        cancelled.Cancel("test", false, DateTime.MinValue);
 
         _bookingRepo
             .Setup(r => r.GetByRideId(_rideId, It.IsAny<CancellationToken>()))

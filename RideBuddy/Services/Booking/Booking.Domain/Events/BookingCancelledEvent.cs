@@ -14,6 +14,8 @@ public class BookingCancelledEvent : DomainEvent
     public int SeatsReleased { get; }
     public string CancellationReason { get; }
     public DateTime CancelledAt { get; }
+    public bool CancelledByPassenger { get; }
+    public DateTime DepartureTime { get; }
 
     public BookingCancelledEvent(
         Guid bookingId,
@@ -22,7 +24,9 @@ public class BookingCancelledEvent : DomainEvent
         Guid driverId,
         int seatsReleased,
         string cancellationReason,
-        DateTime cancelledAt)
+        DateTime cancelledAt,
+        bool cancelledByPassenger,
+        DateTime departureTime)
     {
         BookingId = bookingId;
         RideId = rideId;
@@ -31,5 +35,7 @@ public class BookingCancelledEvent : DomainEvent
         SeatsReleased = seatsReleased;
         CancellationReason = cancellationReason;
         CancelledAt = cancelledAt;
+        CancelledByPassenger = cancelledByPassenger;
+        DepartureTime = departureTime;
     }
 }

@@ -179,7 +179,7 @@ public class CompleteBookingCommandHandlerTests
     public async Task Handle_CancelledBooking_ReturnsFailure()
     {
         var booking = CreateConfirmedBooking();
-        booking.Cancel("test");
+        booking.Cancel("test", false, DateTime.MinValue);
         booking.ClearDomainEvents();
 
         _bookingRepo

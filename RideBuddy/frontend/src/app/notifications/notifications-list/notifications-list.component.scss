@@ -1,0 +1,157 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+
+  .header-left h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0 0 4px;
+  }
+
+  .header-left p {
+    color: #666;
+    margin: 0;
+  }
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notification-card {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: white;
+  border-radius: 14px;
+  padding: 20px 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.2s;
+  position: relative;
+  border-left: 4px solid transparent;
+
+  &:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+  }
+
+  &.unread {
+    border-left-color: #667eea;
+    background: #f8f9ff;
+  }
+}
+
+.notif-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+  &.confirmed { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+  &.rejected  { background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%); }
+  &.cancelled { background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%); }
+  &.completed { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+}
+
+.notif-body {
+  flex: 1;
+  min-width: 0;
+
+  .notif-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+
+  .notif-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+
+  .type-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: rgba(102, 126, 234, 0.12);
+    color: #667eea;
+
+    &.confirmed { background: rgba(67, 233, 123, 0.15); color: #27ae60; }
+    &.rejected  { background: rgba(245, 87, 108, 0.12); color: #e74c3c; }
+    &.cancelled { background: rgba(247, 151, 30, 0.15); color: #e67e22; }
+    &.completed { background: rgba(79, 172, 254, 0.15); color: #2980b9; }
+  }
+
+  .notif-message {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.6;
+    margin: 0 0 8px;
+    word-break: break-word;
+  }
+
+  .notif-date {
+    font-size: 12px;
+    color: #999;
+  }
+}
+
+.unread-dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #667eea;
+  margin-top: 6px;
+}
+
+@keyframes highlight-fade {
+  0%   { box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.7); background: #eef0ff; }
+  60%  { box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3); background: #f4f5ff; }
+  100% { box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);    background: white; }
+}
+
+.notification-card.highlight {
+  animation: highlight-fade 1.8s ease-out forwards;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: #999;
+
+  .empty-icon {
+    font-size: 56px;
+    margin-bottom: 16px;
+    opacity: 0.4;
+  }
+
+  h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #555;
+    margin: 0 0 8px;
+  }
+
+  p {
+    font-size: 15px;
+    margin: 0;
+  }
+}

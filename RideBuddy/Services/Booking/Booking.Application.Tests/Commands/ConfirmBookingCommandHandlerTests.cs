@@ -154,7 +154,7 @@ public class ConfirmBookingCommandHandlerTests
     public async Task Handle_CancelledBooking_ReturnsFailure()
     {
         var booking = CreatePendingBooking();
-        booking.Cancel("test");
+        booking.Cancel("test", false, DateTime.MinValue);
 
         _bookingRepo
             .Setup(r => r.GetById(booking.Id, It.IsAny<CancellationToken>()))
