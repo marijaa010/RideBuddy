@@ -32,11 +32,11 @@ public class GetRideByIdQueryHandlerTests
         var driverId = Guid.NewGuid();
 
         var ride = RideEntity.Create(
-            driverId,
+            driverId, "John", "Doe",
             "Belgrade", 44.7866, 20.4489,
             "Novi Sad", 45.2671, 19.8335,
             DateTime.UtcNow.AddHours(2),
-            3, 500, "RSD", true);
+            3, 500m, "RSD", true);
 
         _rideRepositoryMock
             .Setup(x => x.GetById(rideId, It.IsAny<CancellationToken>()))
@@ -90,11 +90,11 @@ public class GetRideByIdQueryHandlerTests
         var driverId = Guid.NewGuid();
 
         var ride = RideEntity.Create(
-            driverId,
+            driverId, "John", "Doe",
             "Nis", 43.3209, 21.8958,
             "Sofia", 42.6977, 23.3219,
             DateTime.UtcNow.AddHours(5),
-            2, 1500, "RSD", false);
+            2, 1500m, "RSD", false);
 
         ride.Cancel("Weather conditions");
 
@@ -123,11 +123,11 @@ public class GetRideByIdQueryHandlerTests
         var driverId = Guid.NewGuid();
 
         var ride = RideEntity.Create(
-            driverId,
+            driverId, "John", "Doe",
             "Belgrade", 44.7866, 20.4489,
             "Novi Sad", 45.2671, 19.8335,
             DateTime.UtcNow.AddHours(2),
-            3, 500, "RSD", true);
+            3, 500m, "RSD", true);
 
         ride.Start();
         ride.Complete();

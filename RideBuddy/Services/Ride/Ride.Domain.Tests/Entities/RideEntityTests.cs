@@ -196,4 +196,242 @@ public class RideEntityTests
 
         ride.IsAvailable.Should().BeFalse();
     }
+
+    [Fact]
+    public void IsAvailable_NoAvailableSeats_ReturnsFalse()
+    {
+        var ride = CreateValidRide(seats: 2);
+        ride.ReserveSeats(2);
+
+        ride.IsAvailable.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsAvailable_InProgressRide_ReturnsFalse()
+    {
+        var ride = CreateValidRide();
+        ride.Start();
+
+        ride.IsAvailable.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ReserveSeats_ExactlyAllSeats_LeavesZeroAvailable()
+    {
+        var ride = CreateValidRide(seats: 3);
+
+        ride.ReserveSeats(3);
+
+        ride.AvailableSeats.Value.Should().Be(0);
+        ride.TotalSeats.Value.Should().Be(3);
+    }
+
+    [Fact]
+    public void ReserveSeats_OnCancelledRide_ThrowsDomainException()
+    {
+        var ride = CreateValidRide();
+        ride.Cancel("Cancelled");
+
+        var act = () => ride.ReserveSeats(1);
+
+        act.Should().Throw<RideDomainException>()
+            .WithMessage("*Cannot reserve seats*");
+    }
+
+    [Fact]
+    public void ReserveSeats_ZeroSeats_ThrowsDomainException()
+    {
+        var ride = CreateValidRide();
+
+        var act = () => ride.ReserveSeats(0);
+
+        act.Should().Throw<RideDomainException>()
+            .WithMessage("*greater than 0*");
+    }
+
+    [Fact]
+    public void ReserveSeats_NegativeSeats_ThrowsDomainException()
+    {
+        var ride = CreateValidRide();
+
+        var act = () => ride.ReserveSeats(-1);
+
+        act.Should().Throw<RideDomainException>()
+            .WithMessage("*greater than 0*");
+    }
+
+    [Fact]
+    public void ReleaseSeats_AfterReservation_CorrectlyUpdatesSeats()
+    {
+        var ride = CreateValidRide(seats: 5);
+        ride.ReserveSeats(3);
+
+        ride.ReleaseSeats(2);
+
+        ride.AvailableSeats.Value.Should().Be(4);
+        ride.TotalSeats.Value.Should().Be(5);
+    }
+
+    [Fact]
+    public void ReleaseSeats_ZeroSeats_ThrowsDomainException()
+    {
+        var ride = CreateValidRide(seats: 4);
+        ride.ReserveSeats(2);
+
+        var act = () => ride.ReleaseSeats(0);
+
+        act.Should().Throw<RideDomainException>()
+            .WithMessage("*greater than 0*");
+    }
+
+    [Fact]
+    public void ReleaseSeats_NegativeSeats_ThrowsDomainException()
+    {
+        var ride = CreateValidRide(seats: 4);
+        ride.ReserveSeats(2);
+
+        var act = () => ride.ReleaseSeats(-1);
+
+        act.Should().Throw<RideDomainException>()
+            .WithMessage("*greater than 0*");
+    }
+
+    [Fact]
+    public void Start_AlreadyStartedRide_ThrowsDomainException()
+    {
+        var ride = CreateValidRide();
+        ride.Start();
+
+        var act = () => ride.Start();
+
+        act.Should().Throw<RideDomainException>()
+            .WithMessage("*Only scheduled rides*");
+    }
+
+    [Fact]
+    public void Start_CancelledRide_ThrowsDomainException()
+    {
+        var ride = CreateValidRide();
+        ride.Cancel("Cancelled");
+
+        var act = () => ride.Start();
+
+        act.Should().Throw<RideDomainException>()
+            .WithMessage("*Only scheduled rides*");
+    }
+
+    [Fact]
+    public void Complete_ScheduledRideNotYetStarted_ThrowsDomainException()
+    {
+        var ride = CreateValidRide();
+
+        var act = () => ride.Complete();
+
+        act.Should().Throw<RideDomainException>()
+            .WithMessage("*Only in-progress*");
+    }
+
+    [Fact]
+    public void Complete_AlreadyCompletedRide_ThrowsDomainException()
+    {
+        var ride = CreateValidRide();
+        ride.Start();
+        ride.Complete();
+
+        var act = () => ride.Complete();
+
+        act.Should().Throw<RideDomainException>()
+            .WithMessage("*Only in-progress*");
+    }
+
+    [Fact]
+    public void Create_MaxSeats_CreatesSuccessfully()
+    {
+        var ride = RideEntity.Create(
+            Guid.NewGuid(), "John", "Doe",
+            "Belgrade", 0, 0, "Novi Sad", 0, 0,
+            DateTime.UtcNow.AddHours(2), 8, 500m, "RSD");
+
+        ride.AvailableSeats.Value.Should().Be(8);
+        ride.TotalSeats.Value.Should().Be(8);
+    }
+
+    [Fact]
+    public void Create_ZeroPrice_CreatesSuccessfully()
+    {
+        var ride = RideEntity.Create(
+            Guid.NewGuid(), "John", "Doe",
+            "Belgrade", 0, 0, "Novi Sad", 0, 0,
+            DateTime.UtcNow.AddHours(2), 4, 0m, "RSD");
+
+        ride.PricePerSeat.Amount.Should().Be(0m);
+    }
+
+    [Fact]
+    public void Version_IncreasesOnStateChange()
+    {
+        var ride = CreateValidRide(seats: 4);
+        var initialVersion = ride.Version;
+
+        ride.ReserveSeats(2);
+
+        ride.Version.Should().Be(initialVersion + 1);
+    }
+
+    [Fact]
+    public void Version_IncreasesOnMultipleChanges()
+    {
+        var ride = CreateValidRide(seats: 4);
+        var initialVersion = ride.Version;
+
+        ride.ReserveSeats(2);
+        ride.ReleaseSeats(1);
+        ride.ReserveSeats(1);
+
+        ride.Version.Should().Be(initialVersion + 3);
+    }
+
+    [Fact]
+    public void FullLifecycle_ScheduledToInProgressToCompleted_WorksCorrectly()
+    {
+        var ride = CreateValidRide();
+
+        // Scheduled
+        ride.Status.Should().Be(RideStatus.Scheduled);
+
+        // Start
+        ride.Start();
+        ride.Status.Should().Be(RideStatus.InProgress);
+        ride.StartedAt.Should().NotBeNull();
+
+        // Complete
+        ride.Complete();
+        ride.Status.Should().Be(RideStatus.Completed);
+        ride.CompletedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void FullLifecycle_ScheduledToCancelled_WorksCorrectly()
+    {
+        var ride = CreateValidRide(seats: 4);
+        ride.ReserveSeats(2);
+
+        ride.Cancel("Driver sick");
+
+        ride.Status.Should().Be(RideStatus.Cancelled);
+        ride.CancelledAt.Should().NotBeNull();
+        ride.CancellationReason.Should().Be("Driver sick");
+        // Seats remain as they were when cancelled
+        ride.AvailableSeats.Value.Should().Be(2);
+    }
+
+    [Fact]
+    public void AutoConfirmBookings_IsPersisted()
+    {
+        var rideWithAutoConfirm = CreateValidRide(autoConfirm: true);
+        var rideWithoutAutoConfirm = CreateValidRide(autoConfirm: false);
+
+        rideWithAutoConfirm.AutoConfirmBookings.Should().BeTrue();
+        rideWithoutAutoConfirm.AutoConfirmBookings.Should().BeFalse();
+    }
 }

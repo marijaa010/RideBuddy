@@ -31,18 +31,18 @@ public class SearchRidesQueryHandlerTests
         var driverId2 = Guid.NewGuid();
 
         var ride1 = RideEntity.Create(
-            driverId1,
+            driverId1, "John", "Doe",
             "Belgrade", 44.7866, 20.4489,
             "Novi Sad", 45.2671, 19.8335,
             DateTime.UtcNow.AddHours(2),
-            3, 500, "RSD", true);
+            3, 500m, "RSD", true);
 
         var ride2 = RideEntity.Create(
-            driverId2,
+            driverId2, "John", "Doe",
             "Nis", 43.3209, 21.8958,
             "Novi Sad", 45.2671, 19.8335,
             DateTime.UtcNow.AddHours(4),
-            2, 700, "RSD", false);
+            2, 700m, "RSD", false);
 
         var rides = new List<RideEntity> { ride1, ride2 };
 
