@@ -85,4 +85,9 @@ export class RideDetailsComponent implements OnInit {
   getCountdown(dateStr: string): string {
     return this.dateFormatter.getCountdown(dateStr);
   }
+
+  isDriverOfRide(): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    return !!this.ride && !!currentUser && this.ride.driverId === currentUser.id;
+  }
 }

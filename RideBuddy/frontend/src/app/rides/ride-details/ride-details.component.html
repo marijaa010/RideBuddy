@@ -30,6 +30,20 @@
             </div>
           </div>
         </div>
+
+        <app-route-map
+          [origin]="{
+            name: ride.originName,
+            latitude: ride.originLatitude,
+            longitude: ride.originLongitude
+          }"
+          [destination]="{
+            name: ride.destinationName,
+            latitude: ride.destinationLatitude,
+            longitude: ride.destinationLongitude
+          }"
+          height="450px"
+        ></app-route-map>
       </div>
 
       <div class="info-grid">
@@ -69,7 +83,7 @@
         </div>
       </div>
 
-      <div class="booking-section" *ngIf="ride.availableSeats > 0">
+      <div class="booking-section" *ngIf="ride.availableSeats > 0 && !isDriverOfRide()">
         <h3>Book This Ride</h3>
         <div class="booking-form">
           <div class="form-group">

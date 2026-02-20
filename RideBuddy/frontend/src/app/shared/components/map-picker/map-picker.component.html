@@ -1,0 +1,48 @@
+<div class="map-picker-container">
+  <div class="search-container">
+    <label>{{ label }}</label>
+    <div class="search-input-wrapper">
+      <input
+        type="text"
+        [placeholder]="placeholder"
+        [(ngModel)]="searchQuery"
+        (input)="onSearchInput($event)"
+        (blur)="onBlur()"
+        class="search-input"
+      />
+      <button
+        *ngIf="searchQuery"
+        type="button"
+        class="clear-btn"
+        (click)="clearSearch()"
+      >
+        ×
+      </button>
+      <div *ngIf="isSearching" class="search-spinner">
+        <i class="fa fa-spinner fa-spin"></i>
+      </div>
+    </div>
+
+    <div *ngIf="showResults" class="search-results">
+      <div
+        *ngFor="let result of searchResults"
+        class="search-result-item"
+        (mousedown)="onResultMouseDown(result)"
+      >
+        <i class="fa-solid fa-location-dot"></i>
+        <span>{{ result.displayName }}</span>
+      </div>
+      <div *ngIf="searchResults.length === 0" class="no-results">
+        No locations found
+      </div>
+    </div>
+  </div>
+
+  <div class="map-wrapper">
+    <div #mapContainer class="map-container"></div>
+    <div class="map-hint">
+      <i class="fa-solid fa-info-circle"></i>
+      Click on the map or search above • Drag the marker to adjust
+    </div>
+  </div>
+</div>
