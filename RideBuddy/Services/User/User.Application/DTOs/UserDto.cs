@@ -11,7 +11,6 @@ public record UserDto
     public string LastName { get; init; } = null!;
     public string PhoneNumber { get; init; } = null!;
     public string Role { get; init; } = null!;
-    public bool IsEmailVerified { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime? UpdatedAt { get; init; }
 }

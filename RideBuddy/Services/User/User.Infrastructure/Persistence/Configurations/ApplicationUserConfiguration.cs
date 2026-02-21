@@ -27,9 +27,6 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
 
         builder.Property(u => u.UpdatedAt);
 
-        builder.Property(u => u.IsEmailVerified)
-            .HasDefaultValue(false);
-
         builder.HasIndex(u => u.Email)
             .IsUnique()
             .HasDatabaseName("IX_Users_Email");

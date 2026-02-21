@@ -8,7 +8,7 @@ using User.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace User.Infrastructure.Persistence.Migrations
+namespace User.Infrastructure.Migrations
 {
     [DbContext(typeof(UserDbContext))]
     partial class UserDbContextModelSnapshot : ModelSnapshot
@@ -200,11 +200,6 @@ namespace User.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
-
-                    b.Property<bool>("IsEmailVerified")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
 
                     b.Property<string>("LastName")
                         .IsRequired()

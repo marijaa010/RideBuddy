@@ -72,7 +72,6 @@ public class AuthenticationService : IAuthenticationService
             LastName = lastName,
             PhoneNumber = phoneNumber,
             Role = role,
-            IsEmailVerified = false,
             CreatedAt = DateTime.UtcNow
         };
 

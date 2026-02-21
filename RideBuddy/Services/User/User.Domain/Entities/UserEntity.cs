@@ -39,11 +39,6 @@ public class UserEntity : AggregateRoot
     public UserRole Role { get; private set; }
 
     /// <summary>
-    /// Whether the user has verified their email.
-    /// </summary>
-    public bool IsEmailVerified { get; private set; }
-
-    /// <summary>
     /// Timestamp when the user registered.
     /// </summary>
     public DateTime CreatedAt { get; private set; }
@@ -81,7 +76,6 @@ public class UserEntity : AggregateRoot
             LastName = lastName.Trim(),
             PhoneNumber = PhoneNumber.Create(phoneNumber),
             Role = role,
-            IsEmailVerified = false,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -114,29 +108,5 @@ public class UserEntity : AggregateRoot
         IncrementVersion();
 
         AddDomainEvent(new UserProfileUpdatedEvent(Id, UpdatedAt.Value));
-    }
-
-    /// <summary>
-    /// Marks the user's email as verified.
-    /// </summary>
-    public void VerifyEmail()
-    {
-        if (IsEmailVerified)
-            throw new UserDomainException("Email is already verified.");
-
-        IsEmailVerified = true;
-        IncrementVersion();
-    }
-
-    /// <summary>
-    /// Changes the user's role.
-    /// </summary>
-    public void ChangeRole(UserRole newRole)
-    {
-        if (Role == newRole)
-            throw new UserDomainException($"User already has the '{newRole}' role.");
-
-        Role = newRole;
-        IncrementVersion();
     }
 }

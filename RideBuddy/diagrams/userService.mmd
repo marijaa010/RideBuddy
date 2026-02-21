@@ -1,89 +1,266 @@
 classDiagram
-    class UserEntity {
-        +Guid Id
-        +Email Email
-        +string FirstName
-        +string LastName
-        +PhoneNumber PhoneNumber
-        +UserRole Role
-        +bool IsEmailVerified
-        +DateTime CreatedAt
-        +DateTime? UpdatedAt
-        +Register()
-        +UpdateProfile()
-        +VerifyEmail()
-        +ChangeRole()
+    direction TB
+    
+    %% ═══════════════════════════════════════════════════════
+    %% API LAYER
+    %% ═══════════════════════════════════════════════════════
+    
+    class AuthController {
+        <<ApiController>>
+        -IMediator _mediator
+        +Register() IActionResult
+        +Login() IActionResult
     }
-
-    class UserRole {
-        <<enumeration>>
-        Driver
-        Passenger
-        Both
+    
+    class UsersController {
+        <<ApiController>>
+        -IMediator _mediator
+        +GetUser(id) IActionResult
+        +UpdateProfile() IActionResult
     }
-
-    class ApplicationUser {
-        +string FirstName
-        +string LastName
-        +string Role
-        +bool IsEmailVerified
-        +DateTime CreatedAt
-    }
-
-    class IUserRepository {
-        <<interface>>
-        +Task~UserEntity~ GetById(Guid id)
-        +Task~UserEntity~ GetByEmail(string email)
-        +Task Add(UserEntity user)
-        +Task Update(UserEntity user)
-        +Task~bool~ ExistsByEmail(string email)
-    }
-
+    
+    %% ═══════════════════════════════════════════════════════
+    %% APPLICATION LAYER - Commands & Queries
+    %% ═══════════════════════════════════════════════════════
+    
     class RegisterUserCommand {
-        +string Email
-        +string Password
-        +string FirstName
-        +string LastName
-        +string PhoneNumber
-        +string Role
+        <<Command>>
+        +Email, Password
+        +FirstName, LastName
+        +PhoneNumber, Role
     }
-
-    class RegisterUserCommandHandler {
-        -IAuthenticationService authService
-        -IJwtTokenGenerator jwtGenerator
-        -IUnitOfWork unitOfWork
-        -IEventPublisher eventPublisher
-        +Handle(RegisterUserCommand)
-    }
-
+    
     class LoginUserQuery {
-        +string Email
-        +string Password
+        <<Query>>
+        +Email
+        +Password
     }
-
+    
+    class UpdateUserProfileCommand {
+        <<Command>>
+        +UserId
+        +FirstName, LastName
+        +PhoneNumber
+    }
+    
+    class GetUserByIdQuery {
+        <<Query>>
+        +UserId
+    }
+    
+    %% ═══════════════════════════════════════════════════════
+    %% APPLICATION LAYER - Handlers
+    %% ═══════════════════════════════════════════════════════
+    
+    class RegisterUserCommandHandler {
+        <<Handler>>
+        +Handle() Result~AuthResponseDto~
+    }
+    
     class LoginUserQueryHandler {
-        -IAuthenticationService authService
-        -IJwtTokenGenerator jwtGenerator
-        +Handle(LoginUserQuery)
+        <<Handler>>
+        +Handle() Result~AuthResponseDto~
     }
-
+    
+    class UpdateUserProfileCommandHandler {
+        <<Handler>>
+        +Handle() Result~UserDto~
+    }
+    
+    class GetUserByIdQueryHandler {
+        <<Handler>>
+        +Handle() UserDto?
+    }
+    
+    %% ═══════════════════════════════════════════════════════
+    %% APPLICATION LAYER - DTOs & Interfaces
+    %% ═══════════════════════════════════════════════════════
+    
+    class AuthResponseDto {
+        <<DTO>>
+        +Token
+        +User
+    }
+    
+    class UserDto {
+        <<DTO>>
+        +Id, Email
+        +FirstName, LastName
+        +PhoneNumber, Role
+    }
+    
     class IAuthenticationService {
         <<interface>>
-        +Task~UserEntity~ ValidateUser(string email, string password)
-        +Task~Guid~ CreateUser(string email, string password, ...)
-        +Task~IList~ GetUserRoles(Guid userId)
+        +ValidateUser()
+        +CreateUser()
     }
-
+    
     class IJwtTokenGenerator {
         <<interface>>
-        +string GenerateToken(UserEntity user, IList roles)
+        +GenerateToken()
     }
-
-    UserEntity --> UserRole
-    ApplicationUser --|> IdentityUser : extends
-    RegisterUserCommandHandler --> RegisterUserCommand
-    RegisterUserCommandHandler --> UserEntity
+    
+    class IEventPublisher {
+        <<interface>>
+        +Publish()
+        +PublishMany()
+    }
+    
+    %% ═══════════════════════════════════════════════════════
+    %% DOMAIN LAYER
+    %% ═══════════════════════════════════════════════════════
+    
+    class UserEntity {
+        <<AggregateRoot>>
+        +UserId Id
+        +Email Email
+        +PhoneNumber PhoneNumber
+        +UserRole Role
+        +int Version
+        +DomainEvents
+        +Register()$ UserEntity
+        +UpdateProfile()
+    }
+    
+    class Email {
+        <<ValueObject>>
+        +string Value
+        +Create()$ Result
+    }
+    
+    class PhoneNumber {
+        <<ValueObject>>
+        +string Value
+        +Create()$ Result
+    }
+    
+    class UserId {
+        <<ValueObject>>
+        +Guid Value
+    }
+    
+    class UserRole {
+        <<enum>>
+        Driver
+        Passenger
+    }
+    
+    class IUserRepository {
+        <<interface>>
+        +GetById()
+        +GetByEmail()
+        +Add()
+        +Update()
+    }
+    
+    class IUnitOfWork {
+        <<interface>>
+        +IUserRepository Users
+        +SaveChanges()
+        +BeginTransaction()
+        +CommitTransaction()
+    }
+    
+    %% ═══════════════════════════════════════════════════════
+    %% INFRASTRUCTURE LAYER
+    %% ═══════════════════════════════════════════════════════
+    
+    class UserRepository {
+        <<implements IUserRepository>>
+        Maps Domain ↔ EF
+    }
+    
+    class UnitOfWork {
+        <<implements IUnitOfWork>>
+        Transaction Management
+    }
+    
+    class AuthenticationService {
+        <<implements IAuthenticationService>>
+        ASP.NET Identity
+    }
+    
+    class JwtTokenGenerator {
+        <<implements IJwtTokenGenerator>>
+        JWT Bearer Tokens
+    }
+    
+    class RabbitMqEventPublisher {
+        <<implements IEventPublisher>>
+        Outbox Pattern
+    }
+    
+    class OutboxProcessor {
+        <<BackgroundService>>
+        Polls & Publishes
+    }
+    
+    class UserGrpcService {
+        <<gRPC Server>>
+        +ValidateUser()
+        +GetUserInfo()
+    }
+    
+    %% ═══════════════════════════════════════════════════════
+    %% RELATIONSHIPS - API → Application
+    %% ═══════════════════════════════════════════════════════
+    
+    AuthController --> RegisterUserCommand
+    AuthController --> LoginUserQuery
+    UsersController --> GetUserByIdQuery
+    UsersController --> UpdateUserProfileCommand
+    
+    %% ═══════════════════════════════════════════════════════
+    %% RELATIONSHIPS - Application Layer
+    %% ═══════════════════════════════════════════════════════
+    
+    RegisterUserCommand --> RegisterUserCommandHandler
+    LoginUserQuery --> LoginUserQueryHandler
+    UpdateUserProfileCommand --> UpdateUserProfileCommandHandler
+    GetUserByIdQuery --> GetUserByIdQueryHandler
+    
     RegisterUserCommandHandler --> IAuthenticationService
-    LoginUserQueryHandler --> LoginUserQuery
+    RegisterUserCommandHandler --> IJwtTokenGenerator
+    RegisterUserCommandHandler --> IUnitOfWork
+    RegisterUserCommandHandler --> IEventPublisher
+    RegisterUserCommandHandler ..> AuthResponseDto
+    
     LoginUserQueryHandler --> IAuthenticationService
     LoginUserQueryHandler --> IJwtTokenGenerator
+    LoginUserQueryHandler ..> AuthResponseDto
+    
+    UpdateUserProfileCommandHandler --> IUnitOfWork
+    UpdateUserProfileCommandHandler --> IEventPublisher
+    UpdateUserProfileCommandHandler ..> UserDto
+    
+    GetUserByIdQueryHandler --> IUserRepository
+    GetUserByIdQueryHandler ..> UserDto
+    
+    AuthResponseDto --> UserDto
+    
+    %% ═══════════════════════════════════════════════════════
+    %% RELATIONSHIPS - Domain Layer
+    %% ═══════════════════════════════════════════════════════
+    
+    UserEntity --> Email
+    UserEntity --> PhoneNumber
+    UserEntity --> UserId
+    UserEntity --> UserRole
+    
+    %% ═══════════════════════════════════════════════════════
+    %% RELATIONSHIPS - Infrastructure implements Application
+    %% ═══════════════════════════════════════════════════════
+    
+    UserRepository ..|> IUserRepository
+    UnitOfWork ..|> IUnitOfWork
+    AuthenticationService ..|> IAuthenticationService
+    JwtTokenGenerator ..|> IJwtTokenGenerator
+    RabbitMqEventPublisher ..|> IEventPublisher
+    
+    %% ═══════════════════════════════════════════════════════
+    %% RELATIONSHIPS - Infrastructure uses Domain
+    %% ═══════════════════════════════════════════════════════
+    
+    UserRepository --> UserEntity
+    UserGrpcService --> IUserRepository
+    OutboxProcessor --> RabbitMqEventPublisher
