@@ -4,6 +4,7 @@ import { RideService } from '../services/ride.service';
 import { Ride } from '../domain/ride.model';
 import { DateFormatterService } from '../../shared/services/date-formatter.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { LocationSelection } from '../../shared/components/location-autocomplete/location-autocomplete.component';
 
 @Component({
   selector: 'app-ride-list',
@@ -14,6 +15,10 @@ export class RideListComponent implements OnInit {
   rides: Ride[] = [];
   searchForm: FormGroup;
   isLoading = false;
+
+  // Store selected locations from autocomplete
+  originLocation: LocationSelection | null = null;
+  destinationLocation: LocationSelection | null = null;
 
   constructor(
     private rideService: RideService,
@@ -58,5 +63,17 @@ export class RideListComponent implements OnInit {
 
   getCountdown(dateStr: string): string {
     return this.dateFormatter.getCountdown(dateStr);
+  }
+
+  onOriginSelected(location: LocationSelection | null): void {
+    this.originLocation = location;
+    // Update form control for compatibility
+    this.searchForm.patchValue({ origin: location?.name || '' });
+  }
+
+  onDestinationSelected(location: LocationSelection | null): void {
+    this.destinationLocation = location;
+    // Update form control for compatibility
+    this.searchForm.patchValue({ destination: location?.name || '' });
   }
 }
