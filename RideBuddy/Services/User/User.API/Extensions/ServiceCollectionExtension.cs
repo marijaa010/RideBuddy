@@ -49,7 +49,7 @@ public static class ServiceCollectionExtension
         services.AddDbContext<UserDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("UserDb")));
 
-        // ----- ASP.NET Core Identity (course pattern) -----
+        // ----- ASP.NET Core Identity -----
         services.AddIdentity<ApplicationUser, IdentityRole>(options =>
         {
             options.Password.RequireDigit = true;
@@ -103,8 +103,7 @@ public static class ServiceCollectionExtension
     }
 
     /// <summary>
-    /// Configures JWT Bearer authentication.
-    /// Follows the course pattern with SymmetricSecurityKey.
+    /// Configures JWT Bearer authentication with SymmetricSecurityKey.
     /// </summary>
     public static IServiceCollection AddJwtAuthentication(
         this IServiceCollection services,

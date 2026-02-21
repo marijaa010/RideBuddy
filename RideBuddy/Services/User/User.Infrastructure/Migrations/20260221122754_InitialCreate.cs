@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -187,8 +187,7 @@ namespace User.Infrastructure.Migrations
                 values: new object[,]
                 {
                     { "a1b2c3d4-e5f6-7890-abcd-ef1234567890", null, "Driver", "DRIVER" },
-                    { "b2c3d4e5-f6a7-8901-bcde-f12345678901", null, "Passenger", "PASSENGER" },
-                    { "c3d4e5f6-a7b8-9012-cdef-123456789012", null, "Both", "BOTH" }
+                    { "b2c3d4e5-f6a7-8901-bcde-f12345678901", null, "Passenger", "PASSENGER" }
                 });
 
             migrationBuilder.CreateIndex(
