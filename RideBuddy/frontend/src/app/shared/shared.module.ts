@@ -7,6 +7,7 @@ import { SkeletonLoaderComponent } from './components/skeleton-loader/skeleton-l
 import { ToastComponent } from './components/toast/toast.component';
 import { MapPickerComponent } from './components/map-picker/map-picker.component';
 import { RouteMapComponent } from './components/route-map/route-map.component';
+import { LocationAutocompleteComponent } from './components/location-autocomplete/location-autocomplete.component';
 
 @NgModule({
   declarations: [
@@ -14,7 +15,8 @@ import { RouteMapComponent } from './components/route-map/route-map.component';
     SkeletonLoaderComponent,
     ToastComponent,
     MapPickerComponent,
-    RouteMapComponent
+    RouteMapComponent,
+    LocationAutocompleteComponent
   ],
   imports: [
     CommonModule,
@@ -26,7 +28,8 @@ import { RouteMapComponent } from './components/route-map/route-map.component';
     SkeletonLoaderComponent,
     ToastComponent,
     MapPickerComponent,
-    RouteMapComponent
+    RouteMapComponent,
+    LocationAutocompleteComponent
   ]
 })
 export class SharedModule { }
