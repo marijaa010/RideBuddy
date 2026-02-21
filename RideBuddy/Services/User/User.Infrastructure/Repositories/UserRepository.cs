@@ -61,7 +61,6 @@ public class UserRepository : IUserRepository
         appUser.FirstName = user.FirstName;
         appUser.LastName = user.LastName;
         appUser.PhoneNumber = user.PhoneNumber.Value;
-        appUser.IsEmailVerified = user.IsEmailVerified;
         appUser.UpdatedAt = user.UpdatedAt;
         appUser.Role = user.Role.ToString();
 

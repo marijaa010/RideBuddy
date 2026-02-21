@@ -28,7 +28,6 @@ public class UserEntityTests
         user.LastName.Should().Be(ValidLastName);
         user.PhoneNumber.Value.Should().Be(ValidPhone);
         user.Role.Should().Be(UserRole.Passenger);
-        user.IsEmailVerified.Should().BeFalse();
         user.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(2));
         user.UpdatedAt.Should().BeNull();
     }
@@ -117,55 +116,6 @@ public class UserEntityTests
 
         act.Should().Throw<UserDomainException>()
             .WithMessage("*First name*");
-    }
-
-    // ---- VerifyEmail ----
-
-    [Fact]
-    public void VerifyEmail_WhenNotVerified_ShouldSetVerified()
-    {
-        var user = CreateValidUser();
-
-        user.VerifyEmail();
-
-        user.IsEmailVerified.Should().BeTrue();
-        user.Version.Should().Be(1);
-    }
-
-    [Fact]
-    public void VerifyEmail_WhenAlreadyVerified_ShouldThrow()
-    {
-        var user = CreateValidUser();
-        user.VerifyEmail();
-
-        var act = () => user.VerifyEmail();
-
-        act.Should().Throw<UserDomainException>()
-            .WithMessage("*already verified*");
-    }
-
-    // ---- ChangeRole ----
-
-    [Fact]
-    public void ChangeRole_ToDifferentRole_ShouldUpdate()
-    {
-        var user = CreateValidUser();
-
-        user.ChangeRole(UserRole.Driver);
-
-        user.Role.Should().Be(UserRole.Driver);
-        user.Version.Should().Be(1);
-    }
-
-    [Fact]
-    public void ChangeRole_ToSameRole_ShouldThrow()
-    {
-        var user = CreateValidUser();
-
-        var act = () => user.ChangeRole(UserRole.Passenger);
-
-        act.Should().Throw<UserDomainException>()
-            .WithMessage("*already has*");
     }
 
     // ---- ClearDomainEvents ----

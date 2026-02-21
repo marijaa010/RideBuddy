@@ -9,10 +9,10 @@ using User.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace User.Infrastructure.Persistence.Migrations
+namespace User.Infrastructure.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20260208155458_InitialCreate")]
+    [Migration("20260221122754_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -203,11 +203,6 @@ namespace User.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
-
-                    b.Property<bool>("IsEmailVerified")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
 
                     b.Property<string>("LastName")
                         .IsRequired()

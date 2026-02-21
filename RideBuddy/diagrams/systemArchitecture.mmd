@@ -1,28 +1,28 @@
 graph TB
-    subgraph Client["🖥️ Client Layer"]
-        SPA["Single Page Application<br/>React/Angular<br/>Port: 4200"]
+    subgraph Client["Client Layer"]
+        SPA["Single Page Application<br/>Angular 18<br/>Port: 8080"]
     end
     
-    subgraph Gateway["🌐 API Gateway Layer"]
+    subgraph Gateway["API Gateway Layer"]
         APIGW["API Gateway<br/>Ocelot<br/>Port: 5000"]
     end
     
-    subgraph Services["⚙️ Microservices Layer"]
-        US["👤 User Service<br/>Authentication & Profile<br/>Port: 5001<br/>gRPC: 50051"]
-        RS["🚗 Ride Service<br/>CQRS + DDD + Spatial Data<br/>Port: 5002<br/>gRPC: 50052"]
-        BS["📅 Booking Service<br/>Saga Pattern + Outbox<br/>Port: 5003"]
-        NS["🔔 Notification Service<br/>Background Worker<br/>Port: 5004"]
+    subgraph Services["Microservices Layer"]
+        US["User Service<br/>Authentication & Profile<br/>Port: 5001<br/>gRPC: 50051"]
+        RS["Ride Service<br/>CQRS + DDD + Spatial Data<br/>Port: 5002<br/>gRPC: 50052"]
+        BS["Booking Service<br/>Saga Pattern + Outbox<br/>Port: 5003"]
+        NS["Notification Service<br/>Background Worker<br/>Port: 5004"]
     end
     
-    subgraph Cache["⚡ Caching Layer"]
+    subgraph Cache["Caching Layer"]
         Redis["Redis Cache<br/>Port: 6379"]
     end
     
-    subgraph Messaging["📨 Message Broker"]
+    subgraph Messaging["Message Broker"]
         RMQ["RabbitMQ<br/>Port: 5672<br/>Management: 15672"]
     end
     
-    subgraph Databases["💾 Database Layer"]
+    subgraph Databases["Database Layer"]
         DB1[("UserDB<br/>SQL Server<br/>Port: 1433")]
         DB2[("RideDB<br/>SQL Server + Spatial<br/>Port: 1434")]
         DB3[("BookingDB<br/>SQL Server<br/>Port: 1435")]

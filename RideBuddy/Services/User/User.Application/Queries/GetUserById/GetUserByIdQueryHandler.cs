@@ -34,7 +34,6 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserDto
             LastName = user.LastName,
             PhoneNumber = user.PhoneNumber.Value,
             Role = user.Role.ToString(),
-            IsEmailVerified = user.IsEmailVerified,
             CreatedAt = user.CreatedAt,
             UpdatedAt = user.UpdatedAt
         };

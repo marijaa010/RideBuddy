@@ -5,7 +5,6 @@ export interface UserProfile {
   lastName: string;
   phoneNumber: string;
   role: string;
-  isEmailVerified: boolean;
   createdAt: string;
   updatedAt?: string;
 }
