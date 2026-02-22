@@ -44,11 +44,9 @@ public static class ServiceCollectionExtension
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // ----- EF Core (PostgreSQL + PostGIS) -----
+        // ----- EF Core (PostgreSQL) -----
         services.AddDbContext<RideDbContext>(options =>
-            options.UseNpgsql(
-                configuration.GetConnectionString("RideDb"),
-                npgsql => npgsql.UseNetTopologySuite()));
+            options.UseNpgsql(configuration.GetConnectionString("RideDb")));
 
         // ----- Repositories -----
         services.AddScoped<IRideRepository, RideRepository>();
