@@ -35,6 +35,11 @@ export class RideDetailsComponent implements OnInit {
     }
   }
 
+  /**
+   * Loads detailed information for a specific ride.
+   * Navigates back to ride list if ride not found.
+   * @param id Ride ID from route parameter
+   */
   loadRide(id: string): void {
     this.isLoading = true;
     this.rideService.getRideById(id).subscribe({
@@ -50,6 +55,11 @@ export class RideDetailsComponent implements OnInit {
     });
   }
 
+  /**
+   * Creates booking request for current ride.
+   * Validates authentication and available seats before submitting.
+   * Redirects to bookings page on success.
+   */
   bookRide(): void {
     if (!this.ride || !this.authService.isAuthenticated()) {
       this.toastService.warning('Please login to book a ride.');
@@ -78,14 +88,29 @@ export class RideDetailsComponent implements OnInit {
     });
   }
 
+  /**
+   * Formats date to relative format (e.g., "in 2 hours", "tomorrow").
+   * @param dateStr ISO date string
+   * @returns Human-readable date string
+   */
   formatDate(dateStr: string): string {
     return this.dateFormatter.formatRelativeDate(dateStr);
   }
 
+  /**
+   * Calculates countdown to departure time.
+   * @param dateStr ISO date string for departure time
+   * @returns Countdown string (e.g., "2h 30m")
+   */
   getCountdown(dateStr: string): string {
     return this.dateFormatter.getCountdown(dateStr);
   }
 
+  /**
+   * Checks if current logged-in user is the driver of this ride.
+   * Used to hide booking button and show manage bookings button instead.
+   * @returns true if current user is the driver, false otherwise
+   */
   isDriverOfRide(): boolean {
     const currentUser = this.authService.getCurrentUser();
     return !!this.ride && !!currentUser && this.ride.driverId === currentUser.id;

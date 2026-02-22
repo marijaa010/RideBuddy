@@ -31,6 +31,12 @@ export class LoginComponent implements OnInit {
     }
   }
 
+  /**
+   * Handles login form submission.
+   * Validates credentials, calls AuthService to authenticate user.
+   * On success: stores JWT token and user data in localStorage, redirects to /rides.
+   * On error: displays error message via toast notification.
+   */
   onSubmit(): void {
     if (this.loginForm.invalid) {
       this.toastService.warning('Please fill in all required fields correctly.');
@@ -52,6 +58,15 @@ export class LoginComponent implements OnInit {
     });
   }
 
+  /**
+   * Getter for email form control (used for validation in template).
+   * @returns FormControl for email field
+   */
   get email() { return this.loginForm.get('email'); }
+
+  /**
+   * Getter for password form control (used for validation in template).
+   * @returns FormControl for password field
+   */
   get password() { return this.loginForm.get('password'); }
 }

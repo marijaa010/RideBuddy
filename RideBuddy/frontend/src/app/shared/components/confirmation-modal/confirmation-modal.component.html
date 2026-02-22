@@ -1,0 +1,37 @@
+<div class="modal-backdrop" *ngIf="isVisible" (click)="onBackdropClick($event)">
+  <div class="modal-container" [class.danger]="config?.danger">
+    <div class="modal-header">
+      <h3>{{ config?.title }}</h3>
+    </div>
+    
+    <div class="modal-body">
+      <p>{{ config?.message }}</p>
+      
+      <div class="input-group" *ngIf="config?.type === 'prompt'">
+        <label>{{ config?.promptLabel }}</label>
+        <input 
+          type="text" 
+          [(ngModel)]="inputValue"
+          [placeholder]="config?.promptPlaceholder || ''"
+          class="form-input"
+          (keyup.enter)="confirm()"
+          autofocus>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button 
+        *ngIf="config?.type !== 'alert'"
+        class="btn btn-secondary" 
+        (click)="cancel()">
+        {{ config?.cancelText }}
+      </button>
+      <button 
+        class="btn btn-primary" 
+        [class.btn-danger]="config?.danger"
+        (click)="confirm()">
+        {{ config?.confirmText }}
+      </button>
+    </div>
+  </div>
+</div>

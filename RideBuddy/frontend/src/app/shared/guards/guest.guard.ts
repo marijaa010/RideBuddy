@@ -4,14 +4,14 @@ import { Observable } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
 /**
- * Route guard that protects authenticated routes.
- * Redirects unauthenticated users to login page.
- * Applied to routes that require user to be logged in (e.g., /rides, /bookings, /profile).
+ * Route guard that protects guest-only routes (login/register).
+ * Redirects already authenticated users to main application.
+ * Prevents logged-in users from accessing login/register pages.
  */
 @Injectable({
   providedIn: 'root'
 })
-export class AuthGuard  {
+export class GuestGuard  {
   constructor(
     private authService: AuthService,
     private router: Router
@@ -19,14 +19,14 @@ export class AuthGuard  {
 
   /**
    * Determines if route can be activated based on authentication status.
-   * @returns true if user is authenticated, otherwise redirects to login
+   * @returns true if user is NOT authenticated, otherwise redirects to /rides
    */
   canActivate(): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-    if (this.authService.isAuthenticated()) {
+    if (!this.authService.isAuthenticated()) {
       return true;
     }
     
-    this.router.navigate(['/identity/login']);
+    this.router.navigate(['/rides']);
     return false;
   }
 }

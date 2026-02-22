@@ -20,6 +20,15 @@ public class RideGrpcService : RideGrpc.RideGrpcBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Retrieves complete ride information including availability, price, and driver details.
+    /// Called by Booking Service during booking creation to verify ride availability.
+    /// Throws RpcException if ride not found.
+    /// </summary>
+    /// <param name="request">Request containing ride ID to fetch</param>
+    /// <param name="context">gRPC server call context with cancellation token</param>
+    /// <returns>RideInfoResponse with complete ride details and availability status</returns>
+    /// <exception cref="RpcException">Thrown if ride ID is invalid or ride not found</exception>
     public override async Task<RideInfoResponse> GetRideInfo(
         GetRideInfoRequest request,
         ServerCallContext context)
@@ -52,6 +61,14 @@ public class RideGrpcService : RideGrpc.RideGrpcBase
         };
     }
 
+    /// <summary>
+    /// Checks if a ride has enough available seats for booking request.
+    /// Returns availability status without modifying ride state.
+    /// Used for real-time availability checks before reservation.
+    /// </summary>
+    /// <param name="request">Request containing ride ID and number of seats requested</param>
+    /// <param name="context">gRPC server call context with cancellation token</param>
+    /// <returns>CheckAvailabilityResponse with availability flag and current seat count</returns>
     public override async Task<CheckAvailabilityResponse> CheckAvailability(
         CheckAvailabilityRequest request,
         ServerCallContext context)
@@ -77,6 +94,15 @@ public class RideGrpcService : RideGrpc.RideGrpcBase
         };
     }
 
+    /// <summary>
+    /// Reserves seats on a ride (transactional operation).
+    /// Called by Booking Service during booking creation (orchestration step).
+    /// Uses optimistic concurrency control via Version property to prevent overbooking.
+    /// Returns success flag instead of throwing to allow compensation logic in caller.
+    /// </summary>
+    /// <param name="request">Request containing ride ID and number of seats to reserve</param>
+    /// <param name="context">gRPC server call context with cancellation token</param>
+    /// <returns>ReserveSeatsResponse with success flag and message</returns>
     public override async Task<ReserveSeatsResponse> ReserveSeats(
         ReserveSeatsRequest request,
         ServerCallContext context)
@@ -113,6 +139,14 @@ public class RideGrpcService : RideGrpc.RideGrpcBase
         }
     }
 
+    /// <summary>
+    /// Releases previously reserved seats back to availability.
+    /// Called by Booking Service during compensation/rollback (when booking fails or is cancelled).
+    /// Part of the Saga pattern for distributed transaction management.
+    /// </summary>
+    /// <param name="request">Request containing ride ID and number of seats to release</param>
+    /// <param name="context">gRPC server call context with cancellation token</param>
+    /// <returns>ReleaseSeatsResponse with success flag and message</returns>
     public override async Task<ReleaseSeatsResponse> ReleaseSeats(
         ReleaseSeatsRequest request,
         ServerCallContext context)
