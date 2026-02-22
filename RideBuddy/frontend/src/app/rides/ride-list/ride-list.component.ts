@@ -37,6 +37,11 @@ export class RideListComponent implements OnInit {
     this.searchRides();
   }
 
+  /**
+   * Searches for rides based on form filters (origin, destination, date).
+   * Called on component init (loads all rides) and when user clicks search button.
+   * Shows info toast if no rides match criteria.
+   */
   searchRides(): void {
     this.isLoading = true;
 
@@ -57,23 +62,41 @@ export class RideListComponent implements OnInit {
     });
   }
 
+  /**
+   * Formats date to relative format (e.g., "today", "tomorrow", "in 3 days").
+   * @param dateStr ISO date string
+   * @returns Human-readable date string
+   */
   formatDate(dateStr: string): string {
     return this.dateFormatter.formatRelativeDate(dateStr);
   }
 
+  /**
+   * Calculates countdown to departure time.
+   * @param dateStr ISO date string for departure time
+   * @returns Countdown string (e.g., "2h 30m")
+   */
   getCountdown(dateStr: string): string {
     return this.dateFormatter.getCountdown(dateStr);
   }
 
+  /**
+   * Handler for origin location selection from autocomplete component.
+   * Updates both internal state and form control for backend query.
+   * @param location Selected location with name and coordinates, or null if cleared
+   */
   onOriginSelected(location: LocationSelection | null): void {
     this.originLocation = location;
-    // Update form control for compatibility
     this.searchForm.patchValue({ origin: location?.name || '' });
   }
 
+  /**
+   * Handler for destination location selection from autocomplete component.
+   * Updates both internal state and form control for backend query.
+   * @param location Selected location with name and coordinates, or null if cleared
+   */
   onDestinationSelected(location: LocationSelection | null): void {
     this.destinationLocation = location;
-    // Update form control for compatibility
     this.searchForm.patchValue({ destination: location?.name || '' });
   }
 }

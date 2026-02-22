@@ -44,6 +44,10 @@ export class UserProfileComponent implements OnInit {
     this.loadProfile();
   }
 
+  /**
+   * Loads user profile data for current logged-in user.
+   * After loading profile, also fetches user statistics.
+   */
   loadProfile(): void {
     const user = this.authService.getCurrentUser();
     if (!user) return;
@@ -62,6 +66,10 @@ export class UserProfileComponent implements OnInit {
     });
   }
 
+  /**
+   * Loads user statistics (bookings, rides) from API.
+   * For drivers, also fetches ride statistics.
+   */
   loadStats(): void {
     this.bookingService.getMyBookings().subscribe({
       next: (bookings) => {
@@ -80,16 +88,27 @@ export class UserProfileComponent implements OnInit {
     }
   }
 
+  /**
+   * Generates user initials from first and last name for avatar display.
+   * @returns Two-letter initials in uppercase (e.g., "JD" for John Doe)
+   */
   getInitials(): string {
     if (!this.profile) return '';
     return (this.profile.firstName[0] + this.profile.lastName[0]).toUpperCase();
   }
 
+  /**
+   * Formats account creation date to full date string.
+   * @returns Formatted date string (e.g., "January 15, 2024")
+   */
   formatMemberSince(): string {
     if (!this.profile) return '';
     return this.dateFormatter.formatFullDate(this.profile.createdAt);
   }
 
+  /**
+   * Enters edit mode and populates edit form with current profile data.
+   */
   startEditing(): void {
     if (!this.profile) return;
     this.editForm.firstName = this.profile.firstName;
@@ -98,10 +117,17 @@ export class UserProfileComponent implements OnInit {
     this.isEditing = true;
   }
 
+  /**
+   * Cancels profile editing without saving changes.
+   */
   cancelEditing(): void {
     this.isEditing = false;
   }
 
+  /**
+   * Saves updated profile information to backend.
+   * After successful save, updates AuthService to refresh navbar display.
+   */
   saveProfile(): void {
     if (!this.editForm.firstName.trim() || !this.editForm.lastName.trim()) {
       this.toastService.warning('First name and last name are required.');

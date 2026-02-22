@@ -27,6 +27,15 @@ public class AuthenticationService : IAuthenticationService
         _logger = logger;
     }
 
+    /// <summary>
+    /// Validates user credentials (email and password) for login.
+    /// Uses ASP.NET Core Identity's password hashing for verification.
+    /// Maps ApplicationUser (Infrastructure) to UserEntity (Domain) on success.
+    /// </summary>
+    /// <param name="email">User email address</param>
+    /// <param name="password">Plain text password (hashed internally by Identity)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>UserEntity if credentials valid, null otherwise</returns>
     public async Task<UserEntity?> ValidateUser(
         string email,
         string password,
@@ -52,6 +61,20 @@ public class AuthenticationService : IAuthenticationService
         return domainUser;
     }
 
+    /// <summary>
+    /// Creates new user account with ASP.NET Core Identity.
+    /// Automatically hashes password using Identity's PBKDF2 algorithm.
+    /// Creates user in AspNetUsers table and assigns role.
+    /// </summary>
+    /// <param name="email">User email (also used as username)</param>
+    /// <param name="password">Plain text password (will be hashed)</param>
+    /// <param name="firstName">User first name</param>
+    /// <param name="lastName">User last name</param>
+    /// <param name="phoneNumber">User phone number</param>
+    /// <param name="role">User role (Driver or Passenger)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Newly created user ID</returns>
+    /// <exception cref="UserDomainException">Thrown if user creation fails (e.g., duplicate email, weak password)</exception>
     public async Task<Guid> CreateUser(
         string email,
         string password,
@@ -78,7 +101,6 @@ public class AuthenticationService : IAuthenticationService
         var result = await _userManager.CreateAsync(appUser, password);
         if (!result.Succeeded)
         {
-            // Format validation errors for user display
             var errors = result.Errors.Select(e => e.Description).ToList();
             var errorMessage = errors.Count == 1 
                 ? errors[0] 
@@ -90,7 +112,6 @@ public class AuthenticationService : IAuthenticationService
 
         _logger.LogInformation("Created Identity user {UserId}", userId);
 
-        // Assign role
         var roleExists = await _roleManager.RoleExistsAsync(role);
         if (roleExists)
         {
@@ -101,6 +122,13 @@ public class AuthenticationService : IAuthenticationService
         return userId;
     }
 
+    /// <summary>
+    /// Retrieves all roles assigned to a user.
+    /// Used during JWT token generation to embed role claims.
+    /// </summary>
+    /// <param name="userId">User ID to fetch roles for</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of role names assigned to user (e.g., ["Driver"])</returns>
     public async Task<IList<string>> GetUserRoles(
         Guid userId,
         CancellationToken cancellationToken = default)

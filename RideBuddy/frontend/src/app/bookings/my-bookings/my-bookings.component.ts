@@ -25,6 +25,10 @@ export class MyBookingsComponent implements OnInit {
     this.loadBookings();
   }
 
+  /**
+   * Loads all bookings for current logged-in user.
+   * Displays loading spinner while fetching data from API.
+   */
   loadBookings(): void {
     this.isLoading = true;
     this.bookingService.getMyBookings().subscribe({
@@ -39,6 +43,12 @@ export class MyBookingsComponent implements OnInit {
     });
   }
 
+  /**
+   * Cancels a booking after user confirmation via modal dialog.
+   * Shows custom modal instead of browser confirm() for better UX.
+   * Releases reserved seats back to ride availability.
+   * @param id Booking ID to cancel
+   */
   cancelBooking(id: string): void {
     this.modalService.confirm({
       title: 'Cancel Booking',
@@ -61,14 +71,29 @@ export class MyBookingsComponent implements OnInit {
     });
   }
 
+  /**
+   * Formats date to user-friendly relative format (e.g., "in 2 hours", "tomorrow").
+   * @param dateStr ISO date string from API
+   * @returns Human-readable date string
+   */
   formatDate(dateStr: string): string {
     return this.dateFormatter.formatRelativeDate(dateStr);
   }
 
+  /**
+   * Calculates countdown to departure time.
+   * @param dateStr ISO date string for departure time
+   * @returns Countdown string (e.g., "2h 30m")
+   */
   getCountdown(dateStr: string): string {
     return this.dateFormatter.getCountdown(dateStr);
   }
 
+  /**
+   * Converts booking status enum to display label.
+   * @param status Booking status number (0=Pending, 1=Confirmed, 2=Cancelled, 3=Completed, 4=Rejected)
+   * @returns Status label for UI display
+   */
   getStatusLabel(status: number): string {
     const statuses: { [key: number]: string } = {
       0: 'Pending',
@@ -80,6 +105,11 @@ export class MyBookingsComponent implements OnInit {
     return statuses[status] || 'Unknown';
   }
 
+  /**
+   * Maps booking status to CSS class for styling status badges.
+   * @param status Booking status number
+   * @returns CSS class name (e.g., 'confirmed', 'cancelled')
+   */
   getStatusClass(status: number): string {
     const classes: { [key: number]: string } = {
       0: 'pending',

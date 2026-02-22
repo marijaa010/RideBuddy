@@ -6,6 +6,11 @@ import { environment } from '../../../environments/environment';
 import { AuthService, User } from './auth.service';
 import { AppNotification } from '../models/notification.model';
 
+/**
+ * Service for managing real-time notifications via SignalR.
+ * Automatically connects/disconnects SignalR hub based on authentication state.
+ * Provides reactive streams for notifications and unread count.
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -40,6 +45,12 @@ export class NotificationService implements OnDestroy {
     });
   }
 
+  /**
+   * Establishes SignalR connection to Notification Hub.
+   * Uses JWT token for authentication and joins user-specific group.
+   * Listens for 'ReceiveNotification' events to update notification list.
+   * @param userId User ID for joining SignalR group
+   */
   private async connect(userId: string): Promise<void> {
     if (this.hubConnection) {
       return;
@@ -70,6 +81,10 @@ export class NotificationService implements OnDestroy {
     }
   }
 
+  /**
+   * Stops SignalR connection and clears hub reference.
+   * Called automatically when user logs out.
+   */
   private async disconnect(): Promise<void> {
     if (this.hubConnection) {
       await this.hubConnection.stop();
@@ -77,6 +92,11 @@ export class NotificationService implements OnDestroy {
     }
   }
 
+  /**
+   * Loads all notifications for current user from API.
+   * Updates notifications list and recalculates unread count.
+   * Called when user opens notification dropdown.
+   */
   loadNotifications(): void {
     this.http.get<AppNotification[]>(this.apiUrl).subscribe({
       next: (notifications: AppNotification[]) => {
@@ -87,6 +107,10 @@ export class NotificationService implements OnDestroy {
     });
   }
 
+  /**
+   * Loads unread notification count from API.
+   * Called after SignalR connection is established.
+   */
   loadUnreadCount(): void {
     this.http.get<{ count: number }>(`${this.apiUrl}/unread-count`).subscribe({
       next: (res: { count: number }) => this.unreadCountSubject.next(res.count),
@@ -94,6 +118,12 @@ export class NotificationService implements OnDestroy {
     });
   }
 
+  /**
+   * Marks a specific notification as read.
+   * Updates local state and sends request to backend.
+   * @param id Notification ID to mark as read
+   * @returns Observable that completes when operation finishes
+   */
   markAsRead(id: string): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/${id}/read`, {}).pipe(
       tap(() => {
@@ -106,6 +136,11 @@ export class NotificationService implements OnDestroy {
     );
   }
 
+  /**
+   * Marks all notifications as read.
+   * Called when user opens notification dropdown.
+   * Updates local state and sends request to backend.
+   */
   markAllAsRead(): void {
     this.http.put<void>(`${this.apiUrl}/read-all`, {}).subscribe({
       next: () => {
@@ -116,6 +151,9 @@ export class NotificationService implements OnDestroy {
     });
   }
 
+  /**
+   * Cleanup: unsubscribes from auth changes and disconnects SignalR.
+   */
   ngOnDestroy(): void {
     this.authSub.unsubscribe();
     this.disconnect();
