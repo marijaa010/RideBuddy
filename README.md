@@ -10,8 +10,7 @@ This is a student project for the course **Razvoj softvera 2**.
 
 - **User registration and authentication** - JWT-based auth with role support
 - **Ride management** - drivers can create rides with origin, destination, departure time, price, and seat count
-- **Geolocation** - rides store coordinates (PostGIS) so passengers can search by location
-- **Booking system** - passengers book seats on available rides, drivers can enable auto-confirm or manually approve/reject bookings
+O- **Booking system** - passengers book seats on available rides, drivers can enable auto-confirm or manually approve/reject bookings
 - **Real-time notifications** - in-app notifications via SignalR WebSockets, plus email notifications via SMTP
 - **Email alerts** - passengers and drivers get email notifications on booking events (created, confirmed, rejected, cancelled, completed)
 
@@ -31,7 +30,7 @@ API Gateway (YARP reverse proxy, port 5000)
 ```
 
 - **User Service** - handles registration, login, JWT token issuing, and user profile management
-- **Ride Service** - CRUD for rides, seat availability, geospatial queries (PostGIS)
+- **Ride Service** - CRUD for rides, seat availability
 - **Booking Service** - manages the booking lifecycle (create, confirm, reject, cancel, complete) with a saga pattern and transactional outbox for event publishing
 - **Notification Service** - consumes booking events from RabbitMQ and delivers notifications through three channels: database (in-app), SignalR (real-time push), and email (SMTP via MailKit)
 - **API Gateway** - routes all frontend HTTP requests to the appropriate backend service
@@ -42,7 +41,7 @@ API Gateway (YARP reverse proxy, port 5000)
 |-------|-----------|
 | Frontend | Angular 18, TypeScript, SCSS |
 | Backend | .NET 8, ASP.NET Core, Entity Framework Core |
-| Databases | PostgreSQL 16, PostGIS |
+| Databases | PostgreSQL 16 |
 | Messaging | RabbitMQ 3.13 |
 | Inter-service | gRPC, Protocol Buffers |
 | Real-time | SignalR |
