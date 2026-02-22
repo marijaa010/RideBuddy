@@ -8,6 +8,7 @@ import { ToastComponent } from './components/toast/toast.component';
 import { MapPickerComponent } from './components/map-picker/map-picker.component';
 import { RouteMapComponent } from './components/route-map/route-map.component';
 import { LocationAutocompleteComponent } from './components/location-autocomplete/location-autocomplete.component';
+import { ConfirmationModalComponent } from './components/confirmation-modal/confirmation-modal.component';
 
 @NgModule({
   declarations: [
@@ -16,7 +17,8 @@ import { LocationAutocompleteComponent } from './components/location-autocomplet
     ToastComponent,
     MapPickerComponent,
     RouteMapComponent,
-    LocationAutocompleteComponent
+    LocationAutocompleteComponent,
+    ConfirmationModalComponent
   ],
   imports: [
     CommonModule,
@@ -29,7 +31,8 @@ import { LocationAutocompleteComponent } from './components/location-autocomplet
     ToastComponent,
     MapPickerComponent,
     RouteMapComponent,
-    LocationAutocompleteComponent
+    LocationAutocompleteComponent,
+    ConfirmationModalComponent
   ]
 })
 export class SharedModule { }
