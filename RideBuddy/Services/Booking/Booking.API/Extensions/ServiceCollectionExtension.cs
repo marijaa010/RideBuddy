@@ -123,7 +123,16 @@ public static class ServiceCollectionExtension
         IConfiguration configuration)
     {
         var jwtSettings = configuration.GetSection("JwtSettings");
-        var secretKey = jwtSettings.GetSection("secretKey").Value;
+        
+        // Read secret key from environment variable first, fallback to appsettings
+        var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") 
+            ?? jwtSettings.GetSection("secretKey").Value;
+
+        if (string.IsNullOrEmpty(secretKey))
+        {
+            throw new InvalidOperationException(
+                "JWT Secret Key is not configured. Set JWT_SECRET_KEY environment variable or add JwtSettings:secretKey in appsettings.json");
+        }
 
         services.AddAuthentication(options =>
         {
@@ -140,7 +149,7 @@ public static class ServiceCollectionExtension
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = jwtSettings.GetSection("validIssuer").Value,
                 ValidAudience = jwtSettings.GetSection("validAudience").Value,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!))
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
             };
 
             if (string.Equals(
