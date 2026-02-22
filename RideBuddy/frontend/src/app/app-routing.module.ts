@@ -5,7 +5,7 @@ import { AuthGuard } from './shared/guards/auth.guard';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: '/rides',
+    redirectTo: '/identity/login',
     pathMatch: 'full'
   },
   {
@@ -14,7 +14,8 @@ const routes: Routes = [
   },
   {
     path: 'rides',
-    loadChildren: () => import('./rides/rides.module').then(m => m.RidesModule)
+    loadChildren: () => import('./rides/rides.module').then(m => m.RidesModule),
+    canActivate: [AuthGuard]
   },
   {
     path: 'bookings',
