@@ -5,6 +5,7 @@ import { Ride } from '../domain/ride.model';
 import { Booking } from '../../bookings/domain/booking.model';
 import { DateFormatterService } from '../../shared/services/date-formatter.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { ModalService } from '../../shared/services/modal.service';
 
 @Component({
   selector: 'app-my-rides',
@@ -20,7 +21,8 @@ export class MyRidesComponent implements OnInit {
     private rideService: RideService,
     private bookingService: BookingService,
     public dateFormatter: DateFormatterService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private modalService: ModalService
   ) {}
 
   ngOnInit(): void {
@@ -59,37 +61,49 @@ export class MyRidesComponent implements OnInit {
   }
 
   confirmBooking(bookingId: string, rideId: string): void {
-    if (!confirm('Confirm this booking?')) {
-      return;
-    }
+    this.modalService.confirm({
+      title: 'Confirm Booking',
+      message: 'Are you sure you want to confirm this booking request?',
+      confirmText: 'Yes, Confirm',
+      cancelText: 'Cancel'
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
 
-    this.bookingService.confirmBooking(bookingId).subscribe({
-      next: () => {
-        this.toastService.success('Booking confirmed successfully.');
-        this.loadBookingsForRide(rideId);
-      },
-      error: (error) => {
-        const errorMsg = error.error?.error || 'Failed to confirm booking.';
-        this.toastService.error(errorMsg);
-      }
+      this.bookingService.confirmBooking(bookingId).subscribe({
+        next: () => {
+          this.toastService.success('Booking confirmed successfully.');
+          this.loadBookingsForRide(rideId);
+        },
+        error: (error) => {
+          const errorMsg = error.error?.error || 'Failed to confirm booking.';
+          this.toastService.error(errorMsg);
+        }
+      });
     });
   }
 
   rejectBooking(bookingId: string, rideId: string): void {
-    const reason = prompt('Enter rejection reason (optional):');
-    if (reason === null) {
-      return; // User cancelled
-    }
+    this.modalService.prompt({
+      title: 'Reject Booking',
+      message: 'Please provide a reason for rejecting this booking:',
+      confirmText: 'Reject',
+      cancelText: 'Cancel',
+      promptLabel: 'Rejection Reason',
+      promptPlaceholder: 'e.g., Ride is full, Invalid request...',
+      danger: true
+    }).subscribe(reason => {
+      if (reason === null) return;
 
-    this.bookingService.rejectBooking(bookingId, reason).subscribe({
-      next: () => {
-        this.toastService.success('Booking rejected.');
-        this.loadBookingsForRide(rideId);
-      },
-      error: (error) => {
-        const errorMsg = error.error?.error || 'Failed to reject booking.';
-        this.toastService.error(errorMsg);
-      }
+      this.bookingService.rejectBooking(bookingId, reason).subscribe({
+        next: () => {
+          this.toastService.success('Booking rejected.');
+          this.loadBookingsForRide(rideId);
+        },
+        error: (error) => {
+          const errorMsg = error.error?.error || 'Failed to reject booking.';
+          this.toastService.error(errorMsg);
+        }
+      });
     });
   }
 

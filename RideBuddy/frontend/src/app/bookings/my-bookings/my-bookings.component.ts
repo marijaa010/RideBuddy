@@ -3,6 +3,7 @@ import { BookingService } from '../services/booking.service';
 import { Booking } from '../domain/booking.model';
 import { DateFormatterService } from '../../shared/services/date-formatter.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { ModalService } from '../../shared/services/modal.service';
 
 @Component({
   selector: 'app-my-bookings',
@@ -16,7 +17,8 @@ export class MyBookingsComponent implements OnInit {
   constructor(
     private bookingService: BookingService,
     public dateFormatter: DateFormatterService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private modalService: ModalService
   ) {}
 
   ngOnInit(): void {
@@ -38,18 +40,24 @@ export class MyBookingsComponent implements OnInit {
   }
 
   cancelBooking(id: string): void {
-    if (!confirm('Are you sure you want to cancel this booking?')) {
-      return;
-    }
+    this.modalService.confirm({
+      title: 'Cancel Booking',
+      message: 'Are you sure you want to cancel this booking? This action cannot be undone.',
+      confirmText: 'Yes, Cancel',
+      cancelText: 'No, Keep It',
+      danger: true
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
 
-    this.bookingService.cancelBooking(id).subscribe({
-      next: () => {
-        this.toastService.success('Booking cancelled successfully.');
-        this.loadBookings();
-      },
-      error: (error) => {
-        this.toastService.error('Failed to cancel booking. Please try again.');
-      }
+      this.bookingService.cancelBooking(id).subscribe({
+        next: () => {
+          this.toastService.success('Booking cancelled successfully.');
+          this.loadBookings();
+        },
+        error: (error) => {
+          this.toastService.error('Failed to cancel booking. Please try again.');
+        }
+      });
     });
   }
 

@@ -116,14 +116,10 @@ export class UserProfileComponent implements OnInit {
         this.isSaving = false;
         this.toastService.success('Profile updated successfully.');
 
-        // Update the stored user in AuthService so navbar reflects changes
-        const stored = localStorage.getItem('current_user');
-        if (stored) {
-          const user = JSON.parse(stored);
-          user.firstName = updated.firstName;
-          user.lastName = updated.lastName;
-          localStorage.setItem('current_user', JSON.stringify(user));
-        }
+        this.authService.updateCurrentUser({
+          firstName: updated.firstName,
+          lastName: updated.lastName
+        });
       },
       error: () => {
         this.isSaving = false;

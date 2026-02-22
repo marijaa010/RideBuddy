@@ -104,4 +104,13 @@ export class AuthService {
     const user = this.getCurrentUser();
     return user?.role === 'Driver';
   }
+
+  updateCurrentUser(updates: Partial<User>): void {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return;
+
+    const updatedUser = { ...currentUser, ...updates };
+    localStorage.setItem('current_user', JSON.stringify(updatedUser));
+    this.currentUserSubject.next(updatedUser);
+  }
 }
