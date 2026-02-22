@@ -29,13 +29,10 @@ public static class ServiceCollectionExtension
     {
         var applicationAssembly = typeof(Booking.Application.Commands.CreateBooking.CreateBookingCommand).Assembly;
 
-        // MediatR — command/query handlers
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(applicationAssembly));
 
-        // FluentValidation — command validators
         services.AddValidatorsFromAssembly(applicationAssembly);
 
-        // Pipeline behaviors (order matters: validation runs before logging)
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
 
@@ -49,15 +46,12 @@ public static class ServiceCollectionExtension
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // ----- EF Core (PostgreSQL) -----
         services.AddDbContext<BookingDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("BookingDb")));
 
-        // ----- Repositories -----
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-        // ----- gRPC Clients -----
         services.AddGrpcClient<RideGrpc.RideGrpcClient>(options =>
         {
             options.Address = new Uri(configuration["GrpcServices:RideService"]!);
@@ -71,7 +65,6 @@ public static class ServiceCollectionExtension
         services.AddScoped<IRideGrpcClient, RideGrpcClient>();
         services.AddScoped<IUserGrpcClient, UserGrpcClient>();
 
-        // ----- RabbitMQ -----
         services.AddSingleton<IConnection>(sp =>
         {
             var factory = new ConnectionFactory
@@ -109,7 +102,6 @@ public static class ServiceCollectionExtension
 
         services.AddScoped<IEventPublisher, RabbitMqEventPublisher>();
 
-        // ----- Outbox background processor -----
         services.AddHostedService<OutboxProcessor>();
 
         return services;

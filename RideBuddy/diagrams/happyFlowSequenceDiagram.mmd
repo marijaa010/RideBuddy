@@ -6,32 +6,44 @@ sequenceDiagram
     participant MQ as RabbitMQ
     participant NS as Notification Service
     participant D as Driver
-    
-    P->>BS: POST /bookings
-    BS->>US: gRPC: ValidatePassenger
-    US-->>BS: Valid User
-    BS->>RS: gRPC: CheckAvailability
-    RS-->>BS: Available: true, DriverId
-    BS->>BS: Create Booking (Pending)
-    BS->>RS: gRPC: ReserveSeats
+
+    P->>BS: POST /api/bookings
+    BS->>US: gRPC: ValidateUser(passengerId)
+    US-->>BS: User valid + user info
+
+    BS->>RS: gRPC: CheckAvailability(rideId, seats)
+    RS-->>BS: Available: true, DriverId, PricePerSeat
+
+    BS->>RS: gRPC: ReserveSeats(rideId, seats)
+
     alt Seats Reserved Successfully
         RS-->>BS: Success
-        BS->>BS: Confirm Booking
-        BS->>MQ: Publish BookingConfirmedEvent
-        MQ->>NS: BookingConfirmedEvent
-        
+        BS->>BS: Create Booking (auto-confirmed)
+        note over BS: Save Booking + OutboxMessage<br/>in single DB transaction
+        BS-->>P: 201 Created (BookingDto)
+
+        note over BS: OutboxProcessor polls every 10s
+        BS->>MQ: Publish BookingCreatedEvent<br/>(routing: booking.bookingcreatedevent)
+
+        MQ->>NS: BookingCreatedEvent
+
+        NS->>US: gRPC: GetUserInfo(passengerId)
+        NS->>US: gRPC: GetUserInfo(driverId)
+        US-->>NS: Passenger info (name, email)
+        US-->>NS: Driver info (name, email)
+
+        NS->>NS: Persist notification to DB
+
         par Notify Passenger
             NS->>P: Email: Booking Confirmed
+            NS->>P: SignalR: Real-time Push
         and Notify Driver
             NS->>D: Email: New Booking Request
+            NS->>D: SignalR: Real-time Push
         end
-        
-        BS-->>P: 201 Created
+
     else Seats Not Available
         RS-->>BS: Failure
-        BS->>BS: Cancel Booking
-        BS->>MQ: Publish BookingFailedEvent
-        MQ->>NS: BookingFailedEvent
-        NS->>P: Email: Booking Failed
+        BS->>BS: Rollback - delete pending booking
         BS-->>P: 409 Conflict
     end

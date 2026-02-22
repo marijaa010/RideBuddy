@@ -8,7 +8,7 @@ namespace Notification.Application.Services;
 
 /// <summary>
 /// Orchestrates notification delivery across all channels:
-/// email, in-app (database), and real-time (SignalR).
+/// email, in-app and real-time.
 /// </summary>
 public class NotificationService
 {
@@ -132,7 +132,6 @@ public class NotificationService
 
         if (evt.CancelledByPassenger)
         {
-            // Passenger cancelled: passenger gets email only, driver gets email + push
             var passenger = await _userClient.GetUserInfo(evt.PassengerId, ct);
             if (passenger is not null)
             {
@@ -168,13 +167,12 @@ public class NotificationService
         }
         else
         {
-            // Driver cancelled: driver gets email only, passenger gets email + push
             var driver = await _userClient.GetUserInfo(evt.DriverId, ct);
             if (driver is not null)
             {
                 var driverTitle = "You cancelled a booking";
                 var driverMessage = $"You have cancelled the booking (#{evt.BookingId.ToString()[..8]}). " +
-                                    $"Reason: {reason}. {seatsReleased} have been released.{lateWarning}";
+                                    $"Reason: {reason}. {seatsReleased} been released.{lateWarning}";
 
                 await SendEmailOnly(
                     driver,
@@ -189,7 +187,7 @@ public class NotificationService
                 var passengerTitle = "Your booking was cancelled by the driver";
                 var passengerMessage = $"Unfortunately, your booking (#{evt.BookingId.ToString()[..8]}) " +
                                        $"has been cancelled by the driver. " +
-                                       $"Reason: {reason}. {seatsReleased} have been released. " +
+                                       $"Reason: {reason}. {seatsReleased} been released. " +
                                        "Please look for another ride.";
 
                 await SendAll(
@@ -208,7 +206,7 @@ public class NotificationService
         var passenger = await _userClient.GetUserInfo(evt.PassengerId, ct);
         if (passenger is null) return;
 
-        var title = "Ride Completed!";
+        var title = "Ride completed!";
         var message = $"Your ride (booking #{evt.BookingId.ToString()[..8]}) has been completed. " +
                       "Thank you for riding with RideBuddy! We hope you had a great trip.";
 
@@ -216,7 +214,7 @@ public class NotificationService
             passenger, title, message,
             NotificationType.BookingCompleted,
             evt.BookingId, evt.RideId,
-            "RideBuddy - Ride Completed",
+            "RideBuddy - Ride completed",
             BuildEmailBody(passenger.FirstName, title, message),
             ct);
     }

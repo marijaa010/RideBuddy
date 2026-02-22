@@ -44,7 +44,7 @@ public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand,
             request.PassengerId,
             request.RideId);
 
-        // Saga Step 1: Validate user via gRPC
+        // Validate user via gRPC
         var userInfo = await _userClient.ValidateUser(request.PassengerId, cancellationToken);
         if (userInfo is null || !userInfo.IsValid)
         {
@@ -52,7 +52,7 @@ public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand,
             return Result.Failure<BookingDto>("User not found or is not valid.");
         }
 
-        // Saga Step 2: Check ride availability via gRPC
+        // Check ride availability via gRPC
         var rideInfo = await _rideClient.GetRideInfo(request.RideId, cancellationToken);
         if (rideInfo is null)
         {
@@ -71,7 +71,7 @@ public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand,
                 $"Not enough available seats. Available: {rideInfo.AvailableSeats}");
         }
 
-        // Saga Step 3: Check if an active booking already exists
+        // Check if an active booking already exists
         var existingBooking = await _unitOfWork.Bookings.ExistsActiveBooking(
             request.PassengerId, 
             request.RideId, 
@@ -82,7 +82,7 @@ public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand,
             return Result.Failure<BookingDto>("You already have an active booking for this ride.");
         }
 
-        // Saga Step 4: Create booking in Pending status
+        // Create booking in Pending status
         var booking = BookingEntity.Create(
             request.RideId,
             request.PassengerId,
@@ -101,7 +101,7 @@ public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand,
             await _unitOfWork.Bookings.Add(booking, cancellationToken);
             await _unitOfWork.SaveChanges(cancellationToken);
 
-            // Saga Step 5: Reserve seats via gRPC
+            // Reserve seats via gRPC
             var seatsReserved = await _rideClient.ReserveSeats(
                 request.RideId, 
                 request.SeatsToBook, 
@@ -122,7 +122,7 @@ public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand,
                 return Result.Failure<BookingDto>("Could not reserve seats. Please try again.");
             }
 
-            // Saga Step 6: Auto-confirm or wait for driver approval
+            // Auto-confirm or wait for driver approval
             if (rideInfo.AutoConfirmBookings)
             {
                 booking.Confirm();
@@ -139,7 +139,7 @@ public class CreateBookingCommandHandler : IRequestHandler<CreateBookingCommand,
             await _unitOfWork.SaveChanges(cancellationToken);
             await _unitOfWork.CommitTransaction(cancellationToken);
 
-            // Saga Step 7: Publish domain events
+            // Publish domain events
             // Auto-confirm: BookingCreatedEvent + BookingConfirmedEvent
             // Manual: BookingCreatedEvent only (driver gets notified of pending booking)
             await _eventPublisher.PublishMany(booking.DomainEvents, cancellationToken);

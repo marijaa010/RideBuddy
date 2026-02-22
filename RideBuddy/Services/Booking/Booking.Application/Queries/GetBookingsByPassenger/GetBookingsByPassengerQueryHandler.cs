@@ -47,13 +47,11 @@ public class GetBookingsByPassengerQueryHandler
                 cancellationToken);
         }
 
-        // Fetch ride information for each booking
         var bookingDtos = new List<BookingDto>();
         foreach (var booking in bookings)
         {
             var dto = MapToDto(booking);
             
-            // Try to fetch ride info
             try
             {
                 var rideInfo = await _rideClient.GetRideInfo(booking.RideId.Value, cancellationToken);

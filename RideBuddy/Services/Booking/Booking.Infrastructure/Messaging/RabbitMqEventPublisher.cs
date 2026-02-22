@@ -31,7 +31,7 @@ public class RabbitMqEventPublisher : IEventPublisher
     public async Task Publish<T>(T domainEvent, CancellationToken cancellationToken = default) 
         where T : DomainEvent
     {
-        // Save to outbox first (transactional guarantee)
+        // Save to outbox first
         var outboxMessage = new OutboxMessage
         {
             Id = Guid.NewGuid(),

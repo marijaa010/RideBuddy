@@ -2,22 +2,22 @@ graph TB
     subgraph Client["Client Layer"]
         SPA["Single Page Application<br/>Angular 18 + SignalR<br/>Port: 8080"]
     end
-    
+
     subgraph Gateway["API Gateway Layer"]
         APIGW["API Gateway<br/>Ocelot<br/>Port: 5000"]
     end
-    
+
     subgraph Services["Microservices Layer"]
         US["User Service<br/>ASP.NET Identity + JWT<br/>Port: 5001<br/>gRPC: 50051"]
         RS["Ride Service<br/>DDD + Outbox<br/>Port: 5002<br/>gRPC: 50052"]
-        BS["Booking Service<br/>Orchestration + Outbox<br/>Port: 5003"]
+        BS["Booking Service<br/>Saga Pattern + Outbox<br/>Port: 5003"]
         NS["Notification Service<br/>SignalR Hub + Consumer<br/>Port: 5004"]
     end
-    
+
     subgraph Messaging["Message Broker"]
         RMQ["RabbitMQ<br/>Topic Exchange<br/>Port: 5672<br/>Management: 15672"]
     end
-    
+
     subgraph Databases["Database Layer"]
         DB1[("UserDB<br/>PostgreSQL 16<br/>Port: 5435")]
         DB2[("RideDB<br/>PostgreSQL 16<br/>Port: 5433")]

@@ -18,7 +18,6 @@ public class BookingEntityConfiguration : IEntityTypeConfiguration<BookingEntity
 
         builder.HasKey(b => b.Id);
 
-        // Value Object conversions
         builder.Property(b => b.RideId)
             .HasConversion(
                 rideId => rideId.Value,
@@ -33,7 +32,6 @@ public class BookingEntityConfiguration : IEntityTypeConfiguration<BookingEntity
             .HasColumnName("PassengerId")
             .IsRequired();
 
-        // Passenger name fields
         builder.Property(b => b.PassengerFirstName)
             .HasMaxLength(100)
             .IsRequired();
@@ -49,7 +47,6 @@ public class BookingEntityConfiguration : IEntityTypeConfiguration<BookingEntity
             .HasColumnName("SeatsBooked")
             .IsRequired();
 
-        // Money value object - stored as two columns
         builder.OwnsOne(b => b.TotalPrice, money =>
         {
             money.Property(m => m.Amount)
@@ -87,7 +84,6 @@ public class BookingEntityConfiguration : IEntityTypeConfiguration<BookingEntity
         builder.Property(b => b.Version)
             .IsConcurrencyToken();
 
-        // Indexes for common queries
         builder.HasIndex(b => b.PassengerId)
             .HasDatabaseName("IX_Bookings_PassengerId");
 

@@ -56,9 +56,14 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notification.Infrastructure", "Services\Notification\Notification.Infrastructure\Notification.Infrastructure.csproj", "{60529120-3EE0-4DD4-A552-9BF6982C1703}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notification.API", "Services\Notification\Notification.API\Notification.API.csproj", "{E20B99BB-C469-40E0-B257-0DFA35AEA53D}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RideBuddy.E2E.Tests", "tests\RideBuddy.E2E.Tests\RideBuddy.E2E.Tests.csproj", "{DE68A982-643F-49E2-AB99-ADC52E835C3A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notification.Application.Tests", "Services\Notification\Notification.Application.Tests\Notification.Application.Tests.csproj", "{FA82AECA-99A2-4078-9EA1-7B3106FA12A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Notification.Domain.Tests", "Services\Notification\Notification.Domain.Tests\Notification.Domain.Tests.csproj", "{17F6E41F-61DE-44AE-B889-C92912AFC2AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -346,6 +351,30 @@ Global
 		{DE68A982-643F-49E2-AB99-ADC52E835C3A}.Release|x64.Build.0 = Release|Any CPU
 		{DE68A982-643F-49E2-AB99-ADC52E835C3A}.Release|x86.ActiveCfg = Release|Any CPU
 		{DE68A982-643F-49E2-AB99-ADC52E835C3A}.Release|x86.Build.0 = Release|Any CPU
+		{FA82AECA-99A2-4078-9EA1-7B3106FA12A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA82AECA-99A2-4078-9EA1-7B3106FA12A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA82AECA-99A2-4078-9EA1-7B3106FA12A4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FA82AECA-99A2-4078-9EA1-7B3106FA12A4}.Debug|x64.Build.0 = Debug|Any CPU
+		{FA82AECA-99A2-4078-9EA1-7B3106FA12A4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FA82AECA-99A2-4078-9EA1-7B3106FA12A4}.Debug|x86.Build.0 = Debug|Any CPU
+		{FA82AECA-99A2-4078-9EA1-7B3106FA12A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA82AECA-99A2-4078-9EA1-7B3106FA12A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA82AECA-99A2-4078-9EA1-7B3106FA12A4}.Release|x64.ActiveCfg = Release|Any CPU
+		{FA82AECA-99A2-4078-9EA1-7B3106FA12A4}.Release|x64.Build.0 = Release|Any CPU
+		{FA82AECA-99A2-4078-9EA1-7B3106FA12A4}.Release|x86.ActiveCfg = Release|Any CPU
+		{FA82AECA-99A2-4078-9EA1-7B3106FA12A4}.Release|x86.Build.0 = Release|Any CPU
+		{17F6E41F-61DE-44AE-B889-C92912AFC2AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17F6E41F-61DE-44AE-B889-C92912AFC2AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17F6E41F-61DE-44AE-B889-C92912AFC2AA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{17F6E41F-61DE-44AE-B889-C92912AFC2AA}.Debug|x64.Build.0 = Debug|Any CPU
+		{17F6E41F-61DE-44AE-B889-C92912AFC2AA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{17F6E41F-61DE-44AE-B889-C92912AFC2AA}.Debug|x86.Build.0 = Debug|Any CPU
+		{17F6E41F-61DE-44AE-B889-C92912AFC2AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17F6E41F-61DE-44AE-B889-C92912AFC2AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17F6E41F-61DE-44AE-B889-C92912AFC2AA}.Release|x64.ActiveCfg = Release|Any CPU
+		{17F6E41F-61DE-44AE-B889-C92912AFC2AA}.Release|x64.Build.0 = Release|Any CPU
+		{17F6E41F-61DE-44AE-B889-C92912AFC2AA}.Release|x86.ActiveCfg = Release|Any CPU
+		{17F6E41F-61DE-44AE-B889-C92912AFC2AA}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -376,6 +405,8 @@ Global
 		{60529120-3EE0-4DD4-A552-9BF6982C1703} = {89105B15-C8FC-4ED4-8CA9-28AE216824E4}
 		{E20B99BB-C469-40E0-B257-0DFA35AEA53D} = {89105B15-C8FC-4ED4-8CA9-28AE216824E4}
 		{DE68A982-643F-49E2-AB99-ADC52E835C3A} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{FA82AECA-99A2-4078-9EA1-7B3106FA12A4} = {89105B15-C8FC-4ED4-8CA9-28AE216824E4}
+		{17F6E41F-61DE-44AE-B889-C92912AFC2AA} = {89105B15-C8FC-4ED4-8CA9-28AE216824E4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D390B3F0-F57A-463D-B86A-6B3D1A8196BB}

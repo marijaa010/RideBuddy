@@ -55,6 +55,61 @@ classDiagram
         +Create(amount, currency)$ Money
     }
 
+    %% ─── Domain Events ───
+    class BookingCreatedEvent {
+        <<DomainEvent>>
+        +Guid BookingId
+        +Guid RideId
+        +Guid PassengerId
+        +Guid DriverId
+        +int SeatsBooked
+        +decimal TotalPrice
+        +bool WasAutoConfirmed
+    }
+
+    class BookingConfirmedEvent {
+        <<DomainEvent>>
+        +Guid BookingId
+        +Guid PassengerId
+        +Guid DriverId
+        +Guid RideId
+    }
+
+    class BookingRejectedEvent {
+        <<DomainEvent>>
+        +Guid BookingId
+        +Guid PassengerId
+        +string? Reason
+    }
+
+    class BookingCancelledEvent {
+        <<DomainEvent>>
+        +Guid BookingId
+        +Guid PassengerId
+        +Guid DriverId
+        +string? Reason
+        +bool CancelledByPassenger
+        +DateTime DepartureTime
+    }
+
+    class BookingCompletedEvent {
+        <<DomainEvent>>
+        +Guid BookingId
+        +Guid PassengerId
+        +Guid DriverId
+    }
+
+    class OutboxMessage {
+        <<Entity>>
+        +Guid Id
+        +string EventType
+        +string Payload
+        +DateTime OccurredOn
+        +DateTime? ProcessedOn
+        +string? Error
+        +int RetryCount
+    }
+
     class IBookingRepository {
         <<interface>>
         +GetById(id) Task~BookingEntity?~
@@ -95,10 +150,25 @@ classDiagram
     class ConfirmBookingCommand {
         <<Command>>
         +Guid BookingId
+        +Guid UserId
     }
 
     class ConfirmBookingCommandHandler {
         -IUnitOfWork _unitOfWork
+        -IEventPublisher _eventPublisher
+        +Handle(command) Task~Result~
+    }
+
+    class RejectBookingCommand {
+        <<Command>>
+        +Guid BookingId
+        +Guid UserId
+        +string? Reason
+    }
+
+    class RejectBookingCommandHandler {
+        -IUnitOfWork _unitOfWork
+        -IRideGrpcClient _rideClient
         -IEventPublisher _eventPublisher
         +Handle(command) Task~Result~
     }
@@ -113,6 +183,18 @@ classDiagram
     class CancelBookingCommandHandler {
         -IUnitOfWork _unitOfWork
         -IRideGrpcClient _rideClient
+        -IEventPublisher _eventPublisher
+        +Handle(command) Task~Result~
+    }
+
+    class CompleteBookingCommand {
+        <<Command>>
+        +Guid BookingId
+        +Guid UserId
+    }
+
+    class CompleteBookingCommandHandler {
+        -IUnitOfWork _unitOfWork
         -IEventPublisher _eventPublisher
         +Handle(command) Task~Result~
     }
@@ -175,7 +257,8 @@ classDiagram
 
     class RabbitMqEventPublisher {
         -BookingDbContext _dbContext
-        -IConnection? _connection
+        +Publish~T~(domainEvent) Task
+        note: Writes events to OutboxMessages table
     }
 
     class UserGrpcClient {
@@ -188,6 +271,10 @@ classDiagram
 
     class OutboxProcessor {
         <<BackgroundService>>
+        -BookingDbContext _dbContext
+        -IConnection _connection
+        note: Polls every 10s, publishes to RabbitMQ
+        note: routing key booking.eventtype, max 5 retries
     }
 
     %% ─── API Layer ───
@@ -196,10 +283,12 @@ classDiagram
         -IMediator _mediator
         +CreateBooking() Task~IActionResult~
         +GetBooking(id) Task~IActionResult~
-        +GetByPassenger(passengerId) Task~IActionResult~
+        +GetMyBookings() Task~IActionResult~
         +GetByRide(rideId) Task~IActionResult~
         +ConfirmBooking(id) Task~IActionResult~
+        +RejectBooking(id) Task~IActionResult~
         +CancelBooking(id) Task~IActionResult~
+        +CompleteBooking(id) Task~IActionResult~
     }
 
     %% ─── Relationships ───
@@ -209,9 +298,17 @@ classDiagram
     BookingEntity --> SeatsBooked
     BookingEntity --> Money
 
+    BookingEntity ..> BookingCreatedEvent
+    BookingEntity ..> BookingConfirmedEvent
+    BookingEntity ..> BookingRejectedEvent
+    BookingEntity ..> BookingCancelledEvent
+    BookingEntity ..> BookingCompletedEvent
+
     BookingsController --> CreateBookingCommand
     BookingsController --> ConfirmBookingCommand
+    BookingsController --> RejectBookingCommand
     BookingsController --> CancelBookingCommand
+    BookingsController --> CompleteBookingCommand
     BookingsController --> GetBookingByIdQuery
     BookingsController --> GetBookingsByPassengerQuery
     BookingsController --> GetBookingsByRideQuery
@@ -225,13 +322,22 @@ classDiagram
     ConfirmBookingCommandHandler --> IUnitOfWork
     ConfirmBookingCommandHandler --> IEventPublisher
 
+    RejectBookingCommandHandler --> IUnitOfWork
+    RejectBookingCommandHandler --> IRideGrpcClient
+    RejectBookingCommandHandler --> IEventPublisher
+
     CancelBookingCommandHandler --> IUnitOfWork
     CancelBookingCommandHandler --> IRideGrpcClient
     CancelBookingCommandHandler --> IEventPublisher
+
+    CompleteBookingCommandHandler --> IUnitOfWork
+    CompleteBookingCommandHandler --> IEventPublisher
 
     BookingRepository ..|> IBookingRepository
     UnitOfWork ..|> IUnitOfWork
     RabbitMqEventPublisher ..|> IEventPublisher
     UserGrpcClient ..|> IUserGrpcClient
     RideGrpcClient ..|> IRideGrpcClient
-    OutboxProcessor --> RabbitMqEventPublisher
+
+    RabbitMqEventPublisher --> OutboxMessage
+    OutboxProcessor --> OutboxMessage
