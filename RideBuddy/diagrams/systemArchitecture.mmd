@@ -2,54 +2,56 @@ graph TB
     subgraph Client["Client Layer"]
         SPA["Single Page Application<br/>Angular 18<br/>Port: 8080"]
     end
-    
+
     subgraph Gateway["API Gateway Layer"]
         APIGW["API Gateway<br/>Ocelot<br/>Port: 5000"]
     end
-    
+
     subgraph Services["Microservices Layer"]
         US["User Service<br/>Authentication & Profile<br/>Port: 5001<br/>gRPC: 50051"]
         RS["Ride Service<br/>CQRS + DDD + Spatial Data<br/>Port: 5002<br/>gRPC: 50052"]
         BS["Booking Service<br/>Saga Pattern + Outbox<br/>Port: 5003"]
         NS["Notification Service<br/>Background Worker<br/>Port: 5004"]
     end
-    
+
     subgraph Cache["Caching Layer"]
         Redis["Redis Cache<br/>Port: 6379"]
     end
-    
+
     subgraph Messaging["Message Broker"]
-        RMQ["RabbitMQ<br/>Port: 5672<br/>Management: 15672"]
+        RMQ["RabbitMQ<br/>Topic Exchange: ridebuddy.events<br/>Port: 5672 | Management: 15672"]
     end
-    
+
     subgraph Databases["Database Layer"]
-        DB1[("UserDB<br/>SQL Server<br/>Port: 1433")]
-        DB2[("RideDB<br/>SQL Server + Spatial<br/>Port: 1434")]
-        DB3[("BookingDB<br/>SQL Server<br/>Port: 1435")]
-        DB4[("NotificationDB<br/>MongoDB<br/>Port: 27017")]
+        DB1[("UserDB<br/>PostgreSQL<br/>Port: 5435")]
+        DB2[("RideDB<br/>PostgreSQL + PostGIS<br/>Port: 5433")]
+        DB3[("BookingDB<br/>PostgreSQL<br/>Port: 5434")]
+        DB4[("NotificationDB<br/>PostgreSQL<br/>Port: 5436")]
     end
-    
+
     SPA ==>|HTTP/REST| APIGW
+    SPA <-.->|SignalR WebSocket| NS
+
     APIGW ==>|HTTP + JWT| US
     APIGW ==>|HTTP + JWT| RS
     APIGW ==>|HTTP + JWT| BS
-    
-    US -.->|gRPC :50051| RS
-    US -.->|gRPC :50051| BS
-    RS -.->|gRPC :50052| BS
-    
-    RS -->|Publish Events| RMQ
+    APIGW ==>|HTTP + JWT| NS
+
+    BS -.->|gRPC :50051| US
+    BS -.->|gRPC :50052| RS
+    NS -.->|gRPC :50051| US
+    RS -.->|gRPC :50051| US
+
     BS -->|Publish Events| RMQ
     RMQ -->|Consume Events| NS
-    
-    RS <-->|Read Model Cache| Redis
-    RS -->|Cache Invalidation| Redis
-    
+
+    RS <-->|Cache Read/Write| Redis
+
     US <-->|Entity Framework Core| DB1
     RS <-->|EF Core + Spatial Types| DB2
     BS <-->|Entity Framework Core| DB3
-    NS <-->|MongoDB Driver| DB4
-    
+    NS <-->|Entity Framework Core| DB4
+
     style SPA fill:#81C784,stroke:#388E3C,stroke-width:3px,color:#000
     style APIGW fill:#FFB74D,stroke:#F57C00,stroke-width:3px,color:#000
     style US fill:#64B5F6,stroke:#1976D2,stroke-width:3px,color:#000
@@ -61,8 +63,8 @@ graph TB
     style DB1 fill:#CC2927,stroke:#8B0000,stroke-width:2px,color:#fff
     style DB2 fill:#CC2927,stroke:#8B0000,stroke-width:2px,color:#fff
     style DB3 fill:#CC2927,stroke:#8B0000,stroke-width:2px,color:#fff
-    style DB4 fill:#4DB33D,stroke:#2D7A1F,stroke-width:2px,color:#fff
-    
+    style DB4 fill:#CC2927,stroke:#8B0000,stroke-width:2px,color:#fff
+
     style Client fill:#E8F5E9,stroke:#66BB6A,stroke-width:2px
     style Gateway fill:#FFF3E0,stroke:#FFA726,stroke-width:2px
     style Services fill:#E3F2FD,stroke:#42A5F5,stroke-width:2px

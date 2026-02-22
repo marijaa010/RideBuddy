@@ -9,11 +9,9 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Serilog
 builder.Host.UseSerilog((context, config) =>
     config.ReadFrom.Configuration(context.Configuration));
 
-// JWT authentication (same shared key as other services)
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 builder.Services.AddAuthentication(options =>
 {
@@ -34,7 +32,6 @@ builder.Services.AddAuthentication(options =>
             Encoding.UTF8.GetBytes(jwtSettings["secretKey"]!))
     };
 
-    // Allow JWT tokens to be sent via SignalR query string
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>

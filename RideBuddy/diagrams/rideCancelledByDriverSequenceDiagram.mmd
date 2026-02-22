@@ -1,25 +1,38 @@
 sequenceDiagram
     participant D as Driver
     participant RS as Ride Service
-    participant BS as Booking Service
     participant MQ as RabbitMQ
+    participant BS as Booking Service
     participant NS as Notification Service
+    participant US as User Service
     participant P as Passengers
-    
-    D->>RS: DELETE /rides/{id}
+
+    D->>RS: DELETE /api/rides/{id}
     RS->>RS: Update Ride Status: Cancelled
-    RS->>BS: gRPC: GetBookingsForRide(rideId)
-    BS-->>RS: List of Bookings
-    RS->>MQ: Publish RideCancelledEvent
-    MQ->>NS: RideCancelledEvent
+    RS->>MQ: Publish RideCancelledEvent<br/>(routing: ride.ridecancelledevent)
+    RS-->>D: 200 OK
+
     MQ->>BS: RideCancelledEvent
-    
-    BS->>BS: Cancel All Bookings
-    
-    par Notify All Passengers
+    BS->>BS: Cancel All Active Bookings for ride
+    note over BS: No seat release needed -<br/>ride is cancelled
+
+    note over BS: Save Bookings + OutboxMessages<br/>in single DB transaction
+    note over BS: OutboxProcessor polls every 10s
+    BS->>MQ: Publish BookingCancelledEvent per booking<br/>(routing: booking.bookingcancelledevent)
+
+    MQ->>NS: BookingCancelledEvent(s)
+
+    NS->>US: gRPC: GetUserInfo(passengerId)
+    NS->>US: gRPC: GetUserInfo(driverId)
+    US-->>NS: Passenger info (name, email)
+    US-->>NS: Driver info (name, email)
+
+    NS->>NS: Persist notification to DB
+
+    par Notify Passengers
         NS->>P: Email: Ride Cancelled by Driver
+        NS->>P: SignalR: Real-time Push
     and Notify Driver
         NS->>D: Email: Ride Cancellation Confirmed
+        NS->>D: SignalR: Real-time Push
     end
-    
-    RS-->>D: 200 OK

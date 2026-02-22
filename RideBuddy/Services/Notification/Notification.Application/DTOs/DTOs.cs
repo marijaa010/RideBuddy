@@ -24,9 +24,6 @@ public record UserInfoDto
     public string FullName => $"{FirstName} {LastName}";
 }
 
-/// <summary>
-/// Mirrors the booking domain events for JSON deserialization.
-/// </summary>
 public record BookingEventDto
 {
     public Guid BookingId { get; init; }

@@ -1,0 +1,130 @@
+classDiagram
+    %% ─── Domain Layer ───
+    class NotificationEntity {
+        <<AggregateRoot>>
+        +Guid Id
+        +Guid UserId
+        +string Title
+        +string Message
+        +NotificationType Type
+        +Guid? BookingId
+        +Guid? RideId
+        +bool IsRead
+        +DateTime? ReadAt
+        +DateTime CreatedAt
+        +Create()$ NotificationEntity
+        +MarkAsRead()
+    }
+
+    class NotificationType {
+        <<enumeration>>
+        BookingCreated
+        BookingConfirmed
+        BookingRejected
+        BookingCancelled
+        BookingCompleted
+    }
+
+    class INotificationRepository {
+        <<interface>>
+        +GetByUserId(userId) Task~IReadOnlyList~
+        +GetUnreadCount(userId) Task~int~
+        +GetById(id) Task~NotificationEntity?~
+        +Add(notification) Task
+        +Update(notification) Task
+    }
+
+    %% ─── Application Layer ───
+    class NotificationService {
+        -INotificationRepository _repository
+        -ISignalRNotifier _signalRNotifier
+        -IEmailService _emailService
+        -IUserGrpcClient _userClient
+        +HandleBookingCreated(event) Task
+        +HandleBookingConfirmed(event) Task
+        +HandleBookingRejected(event) Task
+        +HandleBookingCancelled(event) Task
+        +HandleBookingCompleted(event) Task
+        -SendNotification(userId, title, msg, type) Task
+    }
+
+    class ISignalRNotifier {
+        <<interface>>
+        +SendToUser(userId, notification) Task
+    }
+
+    class IEmailService {
+        <<interface>>
+        +SendEmailAsync(to, subject, body) Task
+    }
+
+    class IUserGrpcClient {
+        <<interface>>
+        +GetUserInfo(userId) Task~UserInfoDto?~
+    }
+
+    %% ─── Infrastructure Layer ───
+    class BookingEventConsumer {
+        <<BackgroundService>>
+        -IServiceScopeFactory _scopeFactory
+        -IConnection _connection
+        +ExecuteAsync(token) Task
+        -ConsumeBookingEvent(message) Task
+        Exchange: ridebuddy.events (Topic)
+        Queue: notification-service.booking-events
+        RoutingKey: booking.#
+    }
+
+    class SignalRNotifier {
+        -IHubContext~NotificationHub~ _hubContext
+        +SendToUser(userId, notification) Task
+    }
+
+    class SmtpEmailService {
+        -SmtpSettings _settings
+        +SendEmailAsync(to, subject, body) Task
+    }
+
+    class NotificationRepository {
+        -NotificationDbContext _context
+    }
+
+    class UserGrpcClient {
+        -UserGrpc.UserGrpcClient _client
+        +GetUserInfo(userId) Task~UserInfoDto?~
+    }
+
+    %% ─── API Layer ───
+    class NotificationsController {
+        <<ApiController>>
+        -INotificationRepository _repository
+        +GetNotifications() Task~IActionResult~
+        +GetUnreadCount() Task~IActionResult~
+        +MarkAsRead(id) Task~IActionResult~
+        +MarkAllAsRead() Task~IActionResult~
+    }
+
+    class NotificationHub {
+        <<SignalR Hub>>
+        +JoinUserGroup() Task
+    }
+
+    %% ─── Relationships ───
+    NotificationEntity --> NotificationType
+
+    NotificationsController --> INotificationRepository
+
+    BookingEventConsumer --> NotificationService
+
+    NotificationService --> INotificationRepository
+    NotificationService --> ISignalRNotifier
+    NotificationService --> IEmailService
+    NotificationService --> IUserGrpcClient
+    NotificationService --> NotificationEntity
+
+    NotificationRepository ..|> INotificationRepository
+    SignalRNotifier ..|> ISignalRNotifier
+    SmtpEmailService ..|> IEmailService
+    UserGrpcClient ..|> IUserGrpcClient
+
+    SignalRNotifier --> NotificationHub

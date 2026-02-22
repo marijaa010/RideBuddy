@@ -116,8 +116,6 @@ public class BookingEventConsumer : BackgroundService
         using var scope = _scopeFactory.CreateScope();
         var notificationService = scope.ServiceProvider.GetRequiredService<NotificationService>();
 
-        // Dispatch based on event type
-        // EventType matches the class name (e.g., "BookingCreatedEvent")
         var normalizedType = eventType.ToLowerInvariant().Replace("booking.", "");
 
         switch (normalizedType)

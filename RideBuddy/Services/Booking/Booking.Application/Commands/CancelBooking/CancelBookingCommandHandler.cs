@@ -72,12 +72,10 @@ public class CancelBookingCommandHandler : IRequestHandler<CancelBookingCommand,
 
         try
         {
-            // Cancel the booking
             booking.Cancel(reason, cancelledByPassenger, departureTime);
             await _unitOfWork.Bookings.Update(booking, cancellationToken);
             await _unitOfWork.SaveChanges(cancellationToken);
 
-            // Release seats via gRPC
             var seatsReleased = await _rideClient.ReleaseSeats(
                 booking.RideId.Value, 
                 booking.SeatsBooked.Value, 
@@ -88,12 +86,10 @@ public class CancelBookingCommandHandler : IRequestHandler<CancelBookingCommand,
                 _logger.LogWarning(
                     "Failed to release seats for booking {BookingId}, but continuing", 
                     request.BookingId);
-                // Don't rollback - it's more important that the booking is cancelled
             }
 
             await _unitOfWork.CommitTransaction(cancellationToken);
 
-            // Publish domain events
             await _eventPublisher.PublishMany(booking.DomainEvents, cancellationToken);
             booking.ClearDomainEvents();
 
