@@ -32,8 +32,17 @@ public class JwtTokenGenerator : IJwtTokenGenerator
 
     private SigningCredentials GetSigningCredentials()
     {
-        var key = Encoding.UTF8.GetBytes(
-            _configuration.GetValue<string>("JwtSettings:secretKey")!);
+        // Read secret key from environment variable first, fallback to appsettings
+        var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") 
+            ?? _configuration.GetValue<string>("JwtSettings:secretKey");
+
+        if (string.IsNullOrEmpty(secretKey))
+        {
+            throw new InvalidOperationException(
+                "JWT Secret Key is not configured. Set JWT_SECRET_KEY environment variable.");
+        }
+
+        var key = Encoding.UTF8.GetBytes(secretKey);
         var secret = new SymmetricSecurityKey(key);
 
         return new SigningCredentials(secret, SecurityAlgorithms.HmacSha256);
