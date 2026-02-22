@@ -9,6 +9,12 @@ export interface LocationSelection {
   longitude: number;
 }
 
+/**
+ * Location autocomplete component using OpenStreetMap Nominatim API.
+ * Implements ControlValueAccessor for use with Angular Reactive Forms.
+ * Provides debounced search with dropdown results.
+ * Used in ride-list for origin/destination filtering.
+ */
 @Component({
   selector: 'app-location-autocomplete',
   templateUrl: './location-autocomplete.component.html',
@@ -40,23 +46,41 @@ export class LocationAutocompleteComponent implements ControlValueAccessor, OnDe
     this.setupSearchDebounce();
   }
 
+  /**
+   * Cleanup: completes searchSubject to prevent memory leaks.
+   */
   ngOnDestroy(): void {
     this.searchSubject.complete();
   }
 
-  // ControlValueAccessor implementation
+  /**
+   * Writes value from form model to view (ControlValueAccessor).
+   * @param value Location name from form
+   */
   writeValue(value: string): void {
     this.searchQuery = value || '';
   }
 
+  /**
+   * Registers callback for form value changes (ControlValueAccessor).
+   * @param fn Callback function to invoke on value change
+   */
   registerOnChange(fn: (value: string) => void): void {
     this.onChange = fn;
   }
 
+  /**
+   * Registers callback for touch events (ControlValueAccessor).
+   * @param fn Callback function to invoke on blur
+   */
   registerOnTouched(fn: () => void): void {
     this.onTouched = fn;
   }
 
+  /**
+   * Sets up debounced search with 500ms delay.
+   * Prevents excessive API calls while user is typing.
+   */
   private setupSearchDebounce(): void {
     this.searchSubject
       .pipe(
@@ -68,19 +92,28 @@ export class LocationAutocompleteComponent implements ControlValueAccessor, OnDe
       });
   }
 
+  /**
+   * Handles user input in search field.
+   * Triggers debounced search and clears selection if text changes.
+   * @param event DOM input event
+   */
   onSearchInput(event: Event): void {
     const query = (event.target as HTMLInputElement).value;
     this.searchQuery = query;
     this.searchSubject.next(query);
     this.onChange(query);
 
-    // Clear selection if user modifies text
     if (this.selectedLocation && query !== this.selectedLocation.name) {
       this.selectedLocation = null;
       this.locationSelected.emit(null);
     }
   }
 
+  /**
+   * Performs geocoding search via OpenStreetMap Nominatim API.
+   * Requires minimum 3 characters to trigger search.
+   * @param query Search query string
+   */
   private performSearch(query: string): void {
     if (!query || query.trim().length < 3) {
       this.searchResults = [];
@@ -103,6 +136,11 @@ export class LocationAutocompleteComponent implements ControlValueAccessor, OnDe
     });
   }
 
+  /**
+   * Handles selection of a search result from dropdown.
+   * Updates form value and emits locationSelected event.
+   * @param result Selected geocoding result with coordinates
+   */
   selectSearchResult(result: GeocodingResult): void {
     const name = this.geocodingService.getSimplifiedName(result);
     this.searchQuery = name;
@@ -117,6 +155,10 @@ export class LocationAutocompleteComponent implements ControlValueAccessor, OnDe
     this.locationSelected.emit(this.selectedLocation);
   }
 
+  /**
+   * Clears search input and resets all state.
+   * Called when user clicks X button.
+   */
   clearSearch(): void {
     this.searchQuery = '';
     this.searchResults = [];
@@ -126,14 +168,21 @@ export class LocationAutocompleteComponent implements ControlValueAccessor, OnDe
     this.locationSelected.emit(null);
   }
 
+  /**
+   * Handles blur event on input field.
+   * Delays closing dropdown to allow result click to register.
+   */
   onBlur(): void {
     this.onTouched();
-    // Delay to allow click on result
     setTimeout(() => {
       this.showResults = false;
     }, 300);
   }
 
+  /**
+   * Handles mousedown on search result (alternative to click).
+   * @param result Geocoding result to select
+   */
   onResultMouseDown(result: GeocodingResult): void {
     this.selectSearchResult(result);
   }

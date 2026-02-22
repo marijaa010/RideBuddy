@@ -20,6 +20,14 @@ public class UserGrpcService : UserGrpc.UserGrpcBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Validates if a user exists and is valid.
+    /// Called by Booking Service during booking creation to verify passenger.
+    /// Returns IsValid = false instead of throwing exception to allow graceful handling.
+    /// </summary>
+    /// <param name="request">Request containing user ID to validate</param>
+    /// <param name="context">gRPC server call context with cancellation token</param>
+    /// <returns>UserInfoResponse with IsValid flag and user details if found</returns>
     public override async Task<UserInfoResponse> ValidateUser(
         ValidateUserRequest request,
         ServerCallContext context)
@@ -49,6 +57,15 @@ public class UserGrpcService : UserGrpc.UserGrpcBase
         };
     }
 
+    /// <summary>
+    /// Retrieves detailed user information by ID.
+    /// Throws RpcException if user not found (stricter than ValidateUser).
+    /// Called by other services when user must exist (e.g., displaying user details).
+    /// </summary>
+    /// <param name="request">Request containing user ID to fetch</param>
+    /// <param name="context">gRPC server call context with cancellation token</param>
+    /// <returns>UserInfoResponse with complete user details</returns>
+    /// <exception cref="RpcException">Thrown if user ID is invalid or user not found</exception>
     public override async Task<UserInfoResponse> GetUserInfo(
         GetUserInfoRequest request,
         ServerCallContext context)

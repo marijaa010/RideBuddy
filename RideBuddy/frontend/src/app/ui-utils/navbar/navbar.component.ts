@@ -33,10 +33,17 @@ export class NavbarComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Cleanup: unsubscribes from all RxJS subscriptions to prevent memory leaks.
+   */
   ngOnDestroy(): void {
     this.subs.forEach(s => s.unsubscribe());
   }
 
+  /**
+   * Toggles notification dropdown visibility.
+   * When opened, loads latest notifications and marks all as read.
+   */
   toggleNotifications(): void {
     this.showDropdown = !this.showDropdown;
     if (this.showDropdown) {
@@ -47,16 +54,28 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Handles click on specific notification.
+   * Closes dropdown and navigates to notifications page with highlighted notification.
+   * @param notification Clicked notification object
+   */
   onNotificationClick(notification: AppNotification): void {
     this.showDropdown = false;
     this.router.navigate(['/notifications'], { queryParams: { highlight: notification.id } });
   }
 
+  /**
+   * Marks all notifications as read and closes dropdown.
+   */
   markAllRead(): void {
     this.notificationService.markAllAsRead();
     this.showDropdown = false;
   }
 
+  /**
+   * Global click handler to close dropdown when clicking outside navbar.
+   * @param event DOM click event
+   */
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
     if (this.showDropdown && !this.elRef.nativeElement.contains(event.target)) {
@@ -64,6 +83,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Formats notification timestamp to relative time (e.g., "2h ago", "3d ago").
+   * @param dateStr ISO date string
+   * @returns Human-readable relative time string
+   */
   getTimeAgo(dateStr: string): string {
     const diff = Date.now() - new Date(dateStr).getTime();
     const minutes = Math.floor(diff / 60000);
@@ -75,6 +99,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
     return `${days}d ago`;
   }
 
+  /**
+   * Logs out current user.
+   * Clears localStorage (JWT, user data) and redirects to login page.
+   */
   logout(): void {
     this.authService.logout();
   }
