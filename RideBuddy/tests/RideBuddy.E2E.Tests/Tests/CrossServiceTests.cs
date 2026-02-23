@@ -230,6 +230,89 @@ public class CrossServiceTests : E2ETestBase
     }
 
     [SkippableFact]
+    public async Task RideCompleted_AutoCompletesConfirmedBookings()
+    {
+        var driver = await RegisterAndLoginDriver();
+        var passenger = await RegisterAndLoginPassenger();
+        // Use near-future departure so the ride can be started shortly after creation
+        var ride = await Api.CreateRide(
+            MakeRideRequest(autoConfirm: true, seats: 3, departureTime: DateTime.UtcNow.AddSeconds(3)),
+            driver.AccessToken);
+
+        var booking = await Api.CreateBooking(
+            new CreateBookingRequest { RideId = ride.Id, SeatsToBook = 1 },
+            passenger.AccessToken);
+
+        booking.Status.Should().Be(1); // Confirmed (auto-confirm)
+
+        // Wait for departure time to pass so StartRide is allowed
+        await Task.Delay(4000);
+
+        // Start then complete the ride
+        var startResponse = await Api.StartRide(ride.Id, driver.AccessToken);
+        startResponse.EnsureSuccessStatusCode();
+
+        var completeResponse = await Api.CompleteRide(ride.Id, driver.AccessToken);
+        completeResponse.EnsureSuccessStatusCode();
+
+        // Wait for RideCompletedEvent to propagate and auto-complete booking
+        await WaitForCondition(async () =>
+        {
+            var bookings = await Api.GetBookingsByRide(ride.Id, driver.AccessToken);
+            return bookings.All(b => b.Status == 3); // Completed
+        },
+        timeout: TimeSpan.FromSeconds(20),
+        failureMessage: "Booking was not auto-completed after ride completion within 20 seconds.");
+
+        var updatedBookings = await Api.GetBookingsByRide(ride.Id, driver.AccessToken);
+        updatedBookings.Should().ContainSingle();
+        updatedBookings.First().Status.Should().Be(3); // Completed
+        updatedBookings.First().CompletedAt.Should().NotBeNull();
+    }
+
+    [SkippableFact]
+    public async Task RideCancelled_AutoCancelsActiveBookings()
+    {
+        var driver = await RegisterAndLoginDriver();
+        var passengerA = await RegisterAndLoginPassenger("passengerA");
+        var passengerB = await RegisterAndLoginPassenger("passengerB");
+        var ride = await Api.CreateRide(MakeRideRequest(autoConfirm: true, seats: 4), driver.AccessToken);
+
+        var bookingA = await Api.CreateBooking(
+            new CreateBookingRequest { RideId = ride.Id, SeatsToBook = 1 },
+            passengerA.AccessToken);
+
+        var bookingB = await Api.CreateBooking(
+            new CreateBookingRequest { RideId = ride.Id, SeatsToBook = 2 },
+            passengerB.AccessToken);
+
+        bookingA.Status.Should().Be(1); // Confirmed
+        bookingB.Status.Should().Be(1); // Confirmed
+
+        // Cancel the ride
+        var cancelResponse = await Api.CancelRide(ride.Id, driver.AccessToken, "Weather conditions");
+        cancelResponse.EnsureSuccessStatusCode();
+
+        // Wait for RideCancelledEvent to propagate and auto-cancel bookings
+        await WaitForCondition(async () =>
+        {
+            var bookings = await Api.GetBookingsByRide(ride.Id, driver.AccessToken);
+            return bookings.All(b => b.Status == 2); // Cancelled
+        },
+        timeout: TimeSpan.FromSeconds(20),
+        failureMessage: "Bookings were not auto-cancelled after ride cancellation within 20 seconds.");
+
+        var updatedBookings = await Api.GetBookingsByRide(ride.Id, driver.AccessToken);
+        updatedBookings.Should().HaveCount(2);
+        updatedBookings.Should().AllSatisfy(b =>
+        {
+            b.Status.Should().Be(2); // Cancelled
+            b.CancelledAt.Should().NotBeNull();
+            b.CancellationReason.Should().Contain("Weather conditions");
+        });
+    }
+
+    [SkippableFact]
     public async Task GetNotifications_WithoutToken_Returns401()
     {
         var response = await Api.GetNotificationsRaw("invalid-token");

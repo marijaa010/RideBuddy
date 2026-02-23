@@ -78,7 +78,8 @@ public abstract class E2ETestBase : IAsyncLifetime, IDisposable
     protected static CreateRideRequest MakeRideRequest(
         bool autoConfirm = true,
         int seats = 3,
-        decimal price = 10m)
+        decimal price = 10m,
+        DateTime? departureTime = null)
     {
         return new CreateRideRequest
         {
@@ -88,7 +89,7 @@ public abstract class E2ETestBase : IAsyncLifetime, IDisposable
             DestinationName = "Novi Sad",
             DestinationLatitude = 45.2671,
             DestinationLongitude = 19.8335,
-            DepartureTime = DateTime.UtcNow.AddHours(2),
+            DepartureTime = departureTime ?? DateTime.UtcNow.AddHours(2),
             AvailableSeats = seats,
             PricePerSeat = price,
             Currency = "RSD",

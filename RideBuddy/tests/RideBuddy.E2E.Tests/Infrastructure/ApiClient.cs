@@ -131,6 +131,14 @@ public class ApiClient : IDisposable
     public Task<HttpResponseMessage> CancelBooking(Guid id, string token, string? reason = null) =>
         PutJson($"{ServiceUrls.BookingService}/api/bookings/{id}/cancel", new { reason }, token);
 
+    public async Task<List<BookingResponse>> GetBookingsByRide(Guid rideId, string token)
+    {
+        var response = await SendWithAuth(HttpMethod.Get,
+            $"{ServiceUrls.BookingService}/api/bookings/by-ride/{rideId}", token);
+        response.EnsureSuccessStatusCode();
+        return await Deserialize<List<BookingResponse>>(response);
+    }
+
     // ── Notifications ─────────────────────────────────────────
 
     public async Task<List<NotificationResponse>> GetNotifications(string token, bool unreadOnly = false)
