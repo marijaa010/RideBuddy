@@ -26,15 +26,17 @@ export class DateFormatterService {
 
     // Past dates
     if (diffMs < 0) {
-      const absDays = Math.abs(diffDays);
-      if (absDays === 0) {
+      if (this.isToday(dateStr)) {
         return `Today at ${timeStr}`;
-      } else if (absDays === 1) {
+      } else if (this.isYesterday(dateStr)) {
         return `Yesterday at ${timeStr}`;
-      } else if (absDays < 7) {
-        return `${absDays} days ago`;
       } else {
-        return this.formatFullDate(dateStr);
+        const absDays = Math.abs(diffDays);
+        if (absDays < 7) {
+          return `${absDays} days ago`;
+        } else {
+          return this.formatFullDate(dateStr);
+        }
       }
     }
 
@@ -131,5 +133,15 @@ export class DateFormatterService {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     return date.toDateString() === tomorrow.toDateString();
+  }
+
+  /**
+   * Checks if a date was yesterday
+   */
+  isYesterday(dateStr: string): boolean {
+    const date = new Date(dateStr);
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    return date.toDateString() === yesterday.toDateString();
   }
 }
