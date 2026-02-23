@@ -61,4 +61,16 @@ export class RideService {
   createRide(ride: CreateRideRequest): Observable<Ride> {
     return this.http.post<Ride>(this.apiUrl, ride);
   }
+
+  startRide(id: string): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${id}/start`, {});
+  }
+
+  completeRide(id: string): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${id}/complete`, {});
+  }
+
+  cancelRide(id: string, reason?: string): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${id}/cancel`, { reason });
+  }
 }

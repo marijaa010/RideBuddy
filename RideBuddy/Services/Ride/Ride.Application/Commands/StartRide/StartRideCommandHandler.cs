@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Ride.Application.Common;
 using Ride.Application.Interfaces;
+using Ride.Domain.Enums;
 using Ride.Domain.Interfaces;
 
 namespace Ride.Application.Commands.StartRide;
@@ -24,6 +25,10 @@ public class StartRideCommandHandler : IRequestHandler<StartRideCommand, Result>
         var ride = await _unitOfWork.Rides.GetById(request.RideId, cancellationToken);
         if (ride is null) return Result.Failure($"Ride with ID '{request.RideId}' not found.");
         if (ride.DriverId.Value != request.DriverId) return Result.Failure("Only the driver can start the ride.");
+        if (ride.Status != RideStatus.Scheduled)
+            return Result.Failure($"Ride can be started only when status is 'Scheduled'. Current status: '{ride.Status}'.");
+        if (DateTime.UtcNow < ride.DepartureTime)
+            return Result.Failure("Ride cannot be started before the scheduled departure time.");
 
         ride.Start();
 

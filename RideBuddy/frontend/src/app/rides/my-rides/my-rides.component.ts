@@ -228,4 +228,82 @@ export class MyRidesComponent implements OnInit {
     };
     return classes[status] || '';
   }
+
+  canStartRide(ride: Ride): boolean {
+    return ride.status === 0 && Date.now() >= new Date(ride.departureTime).getTime();
+  }
+
+  startRide(ride: Ride): void {
+    if (!this.canStartRide(ride)) {
+      this.toastService.error('Ride can be started only at or after the scheduled departure time.');
+      return;
+    }
+
+    this.modalService.confirm({
+      title: 'Start Ride',
+      message: 'Are you sure you want to start this ride? This will mark it as In Progress.',
+      confirmText: 'Yes, Start',
+      cancelText: 'Cancel'
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
+
+      this.rideService.startRide(ride.id).subscribe({
+        next: () => {
+          this.toastService.success('Ride started successfully.');
+          this.loadMyRides();
+        },
+        error: (error) => {
+          const errorMsg = error.error?.error || 'Failed to start ride.';
+          this.toastService.error(errorMsg);
+        }
+      });
+    });
+  }
+
+  completeRide(rideId: string): void {
+    this.modalService.confirm({
+      title: 'Complete Ride',
+      message: 'Are you sure you want to mark this ride as completed?',
+      confirmText: 'Yes, Complete',
+      cancelText: 'Cancel'
+    }).subscribe(confirmed => {
+      if (!confirmed) return;
+
+      this.rideService.completeRide(rideId).subscribe({
+        next: () => {
+          this.toastService.success('Ride completed successfully.');
+          this.loadMyRides();
+        },
+        error: (error) => {
+          const errorMsg = error.error?.error || 'Failed to complete ride.';
+          this.toastService.error(errorMsg);
+        }
+      });
+    });
+  }
+
+  cancelRide(rideId: string): void {
+    this.modalService.prompt({
+      title: 'Cancel Ride',
+      message: 'Are you sure you want to cancel this ride? All confirmed bookings will be cancelled.',
+      confirmText: 'Cancel Ride',
+      cancelText: 'Go Back',
+      promptLabel: 'Cancellation Reason',
+      promptPlaceholder: 'e.g., Weather conditions, personal emergency...',
+      danger: true
+    }).subscribe(reason => {
+      if (reason === null) return;
+
+      this.rideService.cancelRide(rideId, reason).subscribe({
+        next: () => {
+          this.toastService.success('Ride cancelled.');
+          this.loadMyRides();
+        },
+        error: (error) => {
+          const errorMsg = error.error?.error || 'Failed to cancel ride.';
+          this.toastService.error(errorMsg);
+        }
+      });
+    });
+  }
 }
