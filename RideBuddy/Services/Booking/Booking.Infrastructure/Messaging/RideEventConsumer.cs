@@ -13,7 +13,9 @@ namespace Booking.Infrastructure.Messaging;
 
 /// <summary>
 /// Background service that consumes ride domain events from RabbitMQ.
-/// When a ride is completed, automatically completes all confirmed bookings for that ride.
+/// Handles ride lifecycle changes that affect bookings:
+/// - RideCompleted: auto-completes all confirmed bookings
+/// - RideCancelled: auto-cancels all pending/confirmed bookings
 /// </summary>
 public class RideEventConsumer : BackgroundService
 {
@@ -108,6 +110,10 @@ public class RideEventConsumer : BackgroundService
                 await HandleRideCompleted(body, ct);
                 break;
 
+            case "ridecancelledevent":
+                await HandleRideCancelled(body, ct);
+                break;
+
             default:
                 _logger.LogDebug("Ignoring ride event type: {EventType}", eventType);
                 break;
@@ -191,6 +197,80 @@ public class RideEventConsumer : BackgroundService
             completedCount, evt.RideId);
     }
 
+    private async Task HandleRideCancelled(string payload, CancellationToken ct)
+    {
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var evt = JsonSerializer.Deserialize<RideCancelledEventDto>(payload, options);
+
+        if (evt is null)
+        {
+            _logger.LogWarning("Could not deserialize RideCancelledEvent: {Payload}", payload);
+            return;
+        }
+
+        _logger.LogInformation(
+            "Processing RideCancelledEvent for ride {RideId}. Reason: {Reason}",
+            evt.RideId, evt.Reason);
+
+        using var scope = _scopeFactory.CreateScope();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        var eventPublisher = scope.ServiceProvider.GetRequiredService<IEventPublisher>();
+
+        var bookings = await unitOfWork.Bookings.GetByRideId(evt.RideId, ct);
+        var activeBookings = bookings.Where(b => b.CanBeCancelled()).ToList();
+
+        if (activeBookings.Count == 0)
+        {
+            _logger.LogInformation("No active bookings to cancel for ride {RideId}", evt.RideId);
+            return;
+        }
+
+        var cancelledCount = 0;
+        var reason = $"Ride cancelled by driver: {evt.Reason}";
+
+        foreach (var booking in activeBookings)
+        {
+            try
+            {
+                booking.Cancel(reason, cancelledByPassenger: false, departureTime: DateTime.MinValue);
+                await unitOfWork.Bookings.Update(booking, ct);
+                cancelledCount++;
+
+                _logger.LogInformation(
+                    "Booking {BookingId} auto-cancelled for ride {RideId}",
+                    booking.Id, evt.RideId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "Failed to cancel booking {BookingId} for ride {RideId}",
+                    booking.Id, evt.RideId);
+            }
+        }
+
+        if (cancelledCount == 0)
+        {
+            _logger.LogWarning("No bookings were successfully cancelled for ride {RideId}", evt.RideId);
+            return;
+        }
+
+        var allEvents = activeBookings
+            .Where(b => b.Status == BookingStatus.Cancelled)
+            .SelectMany(b =>
+            {
+                var events = b.DomainEvents.ToList();
+                b.ClearDomainEvents();
+                return events;
+            })
+            .ToList();
+
+        await eventPublisher.PublishMany(allEvents, ct);
+
+        _logger.LogInformation(
+            "Auto-cancelled {Count} bookings for ride {RideId}",
+            cancelledCount, evt.RideId);
+    }
+
     public override void Dispose()
     {
         _channel?.Close();
@@ -207,4 +287,15 @@ internal record RideCompletedEventDto
     public Guid RideId { get; init; }
     public Guid DriverId { get; init; }
     public DateTime CompletedAt { get; init; }
+}
+
+/// <summary>
+/// DTO for deserializing RideCancelledEvent from RabbitMQ.
+/// </summary>
+internal record RideCancelledEventDto
+{
+    public Guid RideId { get; init; }
+    public Guid DriverId { get; init; }
+    public string Reason { get; init; } = string.Empty;
+    public DateTime CancelledAt { get; init; }
 }
