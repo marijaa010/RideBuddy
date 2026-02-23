@@ -50,16 +50,18 @@ export class MyBookingsComponent implements OnInit {
    * @param id Booking ID to cancel
    */
   cancelBooking(id: string): void {
-    this.modalService.confirm({
+    this.modalService.prompt({
       title: 'Cancel Booking',
       message: 'Are you sure you want to cancel this booking? This action cannot be undone.',
       confirmText: 'Yes, Cancel',
       cancelText: 'No, Keep It',
+      promptLabel: 'Cancellation Reason',
+      promptPlaceholder: 'e.g., Change of plans, found another ride...',
       danger: true
-    }).subscribe(confirmed => {
-      if (!confirmed) return;
+    }).subscribe(reason => {
+      if (reason === null) return;
 
-      this.bookingService.cancelBooking(id).subscribe({
+      this.bookingService.cancelBooking(id, reason).subscribe({
         next: () => {
           this.toastService.success('Booking cancelled successfully.');
           this.loadBookings();

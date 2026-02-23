@@ -103,6 +103,7 @@ public static class ServiceCollectionExtension
         services.AddScoped<IEventPublisher, RabbitMqEventPublisher>();
 
         services.AddHostedService<OutboxProcessor>();
+        services.AddHostedService<RideEventConsumer>();
 
         return services;
     }

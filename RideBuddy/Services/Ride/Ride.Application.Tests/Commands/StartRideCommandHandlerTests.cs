@@ -1,3 +1,4 @@
+using System.Reflection;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -34,6 +35,12 @@ public class StartRideCommandHandlerTests
             _loggerMock.Object);
     }
 
+    private static void SetDepartureToPast(RideEntity ride)
+    {
+        var property = typeof(RideEntity).GetProperty("DepartureTime", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        property!.SetValue(ride, DateTime.UtcNow.AddMinutes(-1));
+    }
+
     [Fact]
     public async Task Handle_ScheduledRideByDriver_StartsSuccessfully()
     {
@@ -47,6 +54,8 @@ public class StartRideCommandHandlerTests
             "Novi Sad", 45.2671, 19.8335,
             DateTime.UtcNow.AddHours(2),
             3, 500m, "RSD", true);
+
+        SetDepartureToPast(ride);
 
         _rideRepositoryMock
             .Setup(x => x.GetById(rideId, It.IsAny<CancellationToken>()))
@@ -139,6 +148,8 @@ public class StartRideCommandHandlerTests
             DateTime.UtcNow.AddHours(2),
             3, 500m, "RSD", true);
 
+        SetDepartureToPast(ride);
+
         _rideRepositoryMock
             .Setup(x => x.GetById(rideId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(ride);
@@ -168,6 +179,8 @@ public class StartRideCommandHandlerTests
             DateTime.UtcNow.AddHours(2),
             3, 500m, "RSD", true);
 
+        SetDepartureToPast(ride);
+
         _rideRepositoryMock
             .Setup(x => x.GetById(rideId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(ride);
@@ -179,5 +192,37 @@ public class StartRideCommandHandlerTests
 
         // Assert
         ride.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Handle_BeforeDepartureTime_ReturnsFailure()
+    {
+        // Arrange
+        var driverId = Guid.NewGuid();
+        var rideId = Guid.NewGuid();
+
+        var ride = RideEntity.Create(
+            driverId, "John", "Doe",
+            "Belgrade", 44.7866, 20.4489,
+            "Novi Sad", 45.2671, 19.8335,
+            DateTime.UtcNow.AddHours(2),
+            3, 500m, "RSD", true);
+
+        _rideRepositoryMock
+            .Setup(x => x.GetById(rideId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ride);
+
+        var command = new StartRideCommand { RideId = rideId, DriverId = driverId };
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Contain("before the scheduled departure time");
+        ride.Status.Should().Be(RideStatus.Scheduled);
+
+        _rideRepositoryMock.Verify(x => x.Update(It.IsAny<RideEntity>(), It.IsAny<CancellationToken>()), Times.Never);
+        _unitOfWorkMock.Verify(x => x.SaveChanges(It.IsAny<CancellationToken>()), Times.Never);
     }
 }
