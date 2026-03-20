@@ -48,7 +48,6 @@ public class UserEntity : AggregateRoot
     /// </summary>
     public DateTime? UpdatedAt { get; private set; }
 
-    // Private constructor for EF Core / mapping
     private UserEntity() { }
 
     /// <summary>
@@ -88,6 +87,33 @@ public class UserEntity : AggregateRoot
             user.CreatedAt));
 
         return user;
+    }
+
+    /// <summary>
+    /// Reconstitutes an existing user from persistent storage.
+    /// Does not raise domain events — use only when loading from the database.
+    /// </summary>
+    public static UserEntity Reconstitute(
+        Guid id,
+        string email,
+        string firstName,
+        string lastName,
+        string phoneNumber,
+        UserRole role,
+        DateTime createdAt,
+        DateTime? updatedAt)
+    {
+        return new UserEntity
+        {
+            Id = id,
+            Email = Email.Create(email),
+            FirstName = firstName.Trim(),
+            LastName = lastName.Trim(),
+            PhoneNumber = PhoneNumber.Create(phoneNumber),
+            Role = role,
+            CreatedAt = createdAt,
+            UpdatedAt = updatedAt
+        };
     }
 
     /// <summary>

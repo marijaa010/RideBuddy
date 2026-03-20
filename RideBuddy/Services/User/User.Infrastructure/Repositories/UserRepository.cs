@@ -44,13 +44,6 @@ public class UserRepository : IUserRepository
             .AnyAsync(u => u.NormalizedEmail == normalized, cancellationToken);
     }
 
-    public Task Add(UserEntity user, CancellationToken cancellationToken = default)
-    {
-        // User is already created via Identity's UserManager in AuthenticationService.
-        // Domain entity data is stored on the same ApplicationUser record.
-        return Task.CompletedTask;
-    }
-
     public async Task Update(UserEntity user, CancellationToken cancellationToken = default)
     {
         var appUser = await _context.Users
@@ -67,25 +60,18 @@ public class UserRepository : IUserRepository
         _context.Users.Update(appUser);
     }
 
-    /// <summary>
-    /// Maps an Identity ApplicationUser to a domain UserEntity.
-    /// </summary>
     private static UserEntity MapToDomain(ApplicationUser appUser)
     {
         Enum.TryParse<UserRole>(appUser.Role, true, out var role);
 
-        // Use the factory to create the domain entity with the existing ID
-        var user = UserEntity.Register(
+        return UserEntity.Reconstitute(
             Guid.Parse(appUser.Id),
             appUser.Email!,
             appUser.FirstName,
             appUser.LastName,
             appUser.PhoneNumber ?? "",
-            role);
-
-        // Clear domain events since this is a read, not a new registration
-        user.ClearDomainEvents();
-
-        return user;
+            role,
+            appUser.CreatedAt,
+            appUser.UpdatedAt);
     }
 }
