@@ -76,15 +76,11 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, R
                 request.PhoneNumber,
                 role);
 
-            // Step 5: Persist domain entity
-            await _unitOfWork.Users.Add(user, cancellationToken);
-            await _unitOfWork.SaveChanges(cancellationToken);
-
-            // Step 6: Publish domain events
+            // Step 5: Publish domain events
             await _eventPublisher.PublishMany(user.DomainEvents, cancellationToken);
             user.ClearDomainEvents();
 
-            // Step 7: Generate JWT token
+            // Step 6: Generate JWT token
             var roles = await _authService.GetUserRoles(userId, cancellationToken);
             var token = _jwtGenerator.GenerateToken(user, roles);
 

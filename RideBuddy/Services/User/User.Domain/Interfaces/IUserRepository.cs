@@ -23,11 +23,6 @@ public interface IUserRepository
     Task<bool> ExistsByEmail(string email, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Adds a new user.
-    /// </summary>
-    Task Add(UserEntity user, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Updates an existing user.
     /// </summary>
     Task Update(UserEntity user, CancellationToken cancellationToken = default);

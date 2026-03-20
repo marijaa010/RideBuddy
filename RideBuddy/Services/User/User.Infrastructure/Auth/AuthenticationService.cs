@@ -49,16 +49,15 @@ public class AuthenticationService : IAuthenticationService
 
         Enum.TryParse<UserRole>(user.Role, true, out var role);
 
-        var domainUser = UserEntity.Register(
+        return UserEntity.Reconstitute(
             Guid.Parse(user.Id),
             user.Email!,
             user.FirstName,
             user.LastName,
             user.PhoneNumber ?? "",
-            role);
-
-        domainUser.ClearDomainEvents();
-        return domainUser;
+            role,
+            user.CreatedAt,
+            user.UpdatedAt);
     }
 
     /// <summary>
